@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item 	android:id="@+id/register_cancel"
+        	android:title="@string/reg_cancel"
+        	android:orderInCategory="100"
+        	android:showAsAction="ifRoom" />
+    <item 	android:id="@+id/btn_register_ok"
+        	android:title="@string/reg_ok"
+        	android:orderInCategory="100"
+        	android:showAsAction="ifRoom" />
+</menu>

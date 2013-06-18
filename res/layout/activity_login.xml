@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/login_no_actionbar"
+    android:orientation="vertical"
+    android:paddingTop="30dp" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="70dp" >
+
+        <EditText
+            android:id="@+id/et_login_email"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="4dp"
+            android:background="@drawable/edit_back"
+            android:ems="10"
+            android:hint="@+string/email"
+            android:inputType="textEmailAddress" >
+
+            <requestFocus />
+        </EditText>
+
+        <EditText
+            android:id="@+id/et_login_password"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="4dp"
+            android:background="@drawable/edit_back"
+            android:hint="@+string/password"
+            android:inputType="textPassword" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:paddingTop="20dp"
+        >
+
+        <Button
+            android:id="@+id/btn_register"
+            android:layout_width="135dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="15dp"
+            android:background="@drawable/selector"
+            android:text="@+string/register"
+            android:textColor="#989898" />
+
+        <Button
+            android:id="@+id/btn_login"
+            android:layout_width="135dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="15dp"
+            android:background="@drawable/selector"
+            android:text="@+string/login"
+            android:textColor="#989898" />
+
+    </LinearLayout>
+
+</LinearLayout>

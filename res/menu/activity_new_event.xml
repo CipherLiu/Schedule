@@ -1,0 +1,7 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_send_new_event"
+        android:title="@string/send"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom" />
+</menu>
+    
