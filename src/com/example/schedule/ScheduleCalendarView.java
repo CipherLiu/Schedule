@@ -25,6 +25,7 @@ public class ScheduleCalendarView {
 	private Calendar calSelected = Calendar.getInstance();
 	
 	public LinearLayout layContent = null;
+	public LinearLayout layMain = null;
 	
 	private TextView monthTextView,yearTextView;
 	public static final int SELECT_DATE_REQUEST = 111;
@@ -72,7 +73,7 @@ public class ScheduleCalendarView {
 
 	
 	public View generateContentViewPortrait() {
-		LinearLayout layMain = createLayout(LinearLayout.VERTICAL);
+		layMain = createLayout(LinearLayout.VERTICAL);
 		layMain.setPadding(2, 8, 0, 8);
 		layContent = createLayout(LinearLayout.VERTICAL);
 		yearTextView = new TextView(context);
@@ -216,7 +217,10 @@ public class ScheduleCalendarView {
 				daySelected = dayCell;
 			calCalendar.add(Calendar.DAY_OF_MONTH, 1);
 		}
-		layContent.invalidate();
+		//layMain.invalidate();
+		//layContent.invalidate();
+		for(int j = 0 ;j < days.size() ; j++)
+			days.get(j).invalidate();
 		return daySelected;
 	}
 	
@@ -296,9 +300,10 @@ public class ScheduleCalendarView {
 	}
 
 	public void update(){
-		this.getCalendarStartDate();
-		this.updateYearMonthText();
-		this.updateCalendar();
+		getCalendarStartDate();
+		updateYearMonthText();
+		//updateStartDateForMonth();
+		updateCalendar();
 	}
 	private String format(int x) {
 		String s = "" + x;
