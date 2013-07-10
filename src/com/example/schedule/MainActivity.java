@@ -1,24 +1,40 @@
 package com.example.schedule;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 import com.example.schedule.R;
+import com.example.schedule.NewEventActivity.eventCheckAT;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.widget.Toast;
 
 
 
@@ -37,6 +53,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
      */
 
     ViewPager mViewPager;
+    private static String eventCheckUrl = Global.BASICURL+"EventCheck";
     private boolean hasEventArray[] = new boolean[42];
     private String email,userId;
     private Calendar calSelected = Calendar.getInstance();
@@ -44,6 +61,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private MeFragment myScheduleFragment = new MeFragment();
     private SocialFragment whatsNewFragment = new SocialFragment();
 	private ContactsFragment groupFragment = new ContactsFragment();
+	private ProgressDialog progressDialog;
     
     public String getEmail() {
 		return email;
@@ -77,7 +95,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         email = extras.getString("email");
         userId = extras.getString("userId");
         hasEventArray = extras.getBooleanArray("hasEventArray");
-        
+        progressDialog = new ProgressDialog(MainActivity.this); 
 //        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         // Create the adapter that will return a fragment for each of the three primary sections
@@ -134,7 +152,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				newEventIntent.putExtra("userEmail", email);
 				newEventIntent.putExtra("userId", userId);
 				newEventIntent.setClass(MainActivity.this, NewEventActivity.class);
-				startActivity(newEventIntent);
+				startActivityForResult(newEventIntent , 1);
 				return true;
 			}
         	
@@ -144,15 +162,97 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
 			public boolean onMenuItemClick(MenuItem item) {
 				// TODO Auto-generated method stub
-				calSelected.setTimeInMillis(calToday.getTimeInMillis());
-				myScheduleFragment.update(calSelected);
+				Calendar dateToCheck = getStartDate(Calendar.getInstance(),Calendar.SUNDAY);
+				String calString = dateToCheck.getTimeInMillis()+"";
+				new eventCheckAT().execute(calString,userId);
 				return true;
 			}
         	
         });
         return true;
     }
+	class eventCheckAT extends AsyncTask<String,Integer,JSONObject>{
 
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(eventCheckUrl+"?dateTimeInMillis="+params[0] 
+					+"&userId="+params[1]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					resultJSON = new JSONObject(retSrc);
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(MainActivity.this,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("hasEventArray");
+					for(int i = 0 ; i < jArray.length() ; i++){
+					hasEventArray[i] = jArray.getBoolean(i);
+					}
+					calSelected.setTimeInMillis(calToday.getTimeInMillis());
+					myScheduleFragment.update(calSelected , hasEventArray);
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(MainActivity.this,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
     
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
     }
@@ -215,4 +315,40 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             return null;
         }
     }
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if(requestCode == 1 && resultCode == 1){
+			Bundle extras = data.getExtras();
+			hasEventArray = extras.getBooleanArray("hasEventArray");
+			Calendar calSeclected = (Calendar)extras.get("calSelected");
+			myScheduleFragment.update(calSeclected ,hasEventArray);
+		}
+	}
+    
+	public Calendar getStartDate(Calendar calStartDate , int iFirstDayOfWeek) {
+		calStartDate.set(Calendar.DAY_OF_MONTH, 1);
+		// update days for week
+		int iDay = 0;
+		int iStartDay = iFirstDayOfWeek;
+		if (iStartDay == Calendar.MONDAY) {
+			iDay = calStartDate.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+			if (iDay < 0)
+				iDay = 6;
+		}
+		if (iStartDay == Calendar.SUNDAY) {
+			iDay = calStartDate.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY;
+			if (iDay < 0)
+				iDay = 6;
+		}
+		calStartDate.add(Calendar.DAY_OF_WEEK, -iDay);
+		calStartDate.set(Calendar.HOUR_OF_DAY, 0);
+		calStartDate.set(Calendar.MINUTE, 0);
+		calStartDate.set(Calendar.SECOND, 0);
+		calStartDate.set(Calendar.MILLISECOND, 0);
+		return calStartDate;
+	}
+	
 }

@@ -82,6 +82,9 @@ public class LoginActivity extends Activity {
 				}else if(email.contentEquals("liu")&&password.contentEquals("liu")){
 					Intent intent = new Intent();
 					intent.putExtra("email", "admin");
+					intent.putExtra("userId", "001");
+					boolean hasEventArray[] = new boolean[42];
+					intent.putExtra("hasEventArray", hasEventArray);
 					intent.setClass(LoginActivity.this, MainActivity.class);
 					LoginActivity.this.startActivity(intent);
 				}else{
@@ -111,8 +114,6 @@ public class LoginActivity extends Activity {
 	}
 
 	public Calendar getStartDate(Calendar calStartDate , int iFirstDayOfWeek) {
-//		iMonthViewCurrentMonth = calStartDate.get(Calendar.MONTH);
-//		iMonthViewCurrentYear = calStartDate.get(Calendar.YEAR);
 		calStartDate.set(Calendar.DAY_OF_MONTH, 1);
 		// update days for week
 		int iDay = 0;

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -21,8 +22,11 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.example.schedule.LoginActivity.eventCheckAT;
 import com.example.schedule.RecordButton.OnFinishedRecordListener;
 import com.example.schedule.RegisterActivity.RegisterAT;
 
@@ -69,6 +73,7 @@ public class NewEventActivity extends Activity{
     private static final int PHOTO_REQUEST_GALLERY = 2;
     private static final String IMAGE_UNSPECIFIED = "image/*";
     private static String url = Global.BASICURL+"EventUpdate";
+    private static String eventCheckUrl = Global.BASICURL+"EventCheck";
     private File eventImagePath = new File(Environment.getExternalStorageDirectory().getPath()+
 			"/Schedule/EventImage");
     private File eventRecordPath = new File(Environment.getExternalStorageDirectory().getPath()+
@@ -86,6 +91,7 @@ public class NewEventActivity extends Activity{
 	private EventInfo eventInfo = new EventInfo();
 	private Calendar calFrom = Calendar.getInstance();
 	private Calendar calTo = Calendar.getInstance();
+//	private Calendar dateToCheck = Calendar.getInstance();
 	private DatePickerDialog.OnDateSetListener fromDateListener,toDateListener;
 	private TimePickerDialog.OnTimeSetListener fromTimeListener,toTimeListener;
 	private SimpleDateFormat dfDate = new SimpleDateFormat("yyyy-MM-dd");
@@ -138,6 +144,9 @@ public class NewEventActivity extends Activity{
 			calFrom.set(Calendar.MILLISECOND, 0);
 			calTo.set(Calendar.SECOND, 0);
 			calTo.set(Calendar.MILLISECOND, 0);
+//			dateToCheck.setTimeInMillis(calFrom.getTimeInMillis());
+//			dateToCheck.set(Calendar.HOUR_OF_DAY, 0);
+//			dateToCheck.set(Calendar.MINUTE, 0);
 			eventInfo.setCalFrom(calFrom);
 			eventInfo.setCalTo(calTo);		
 		}
@@ -431,6 +440,29 @@ public class NewEventActivity extends Activity{
 
 	}
 	
+	public Calendar getStartDate(Calendar calStartDate , int iFirstDayOfWeek) {
+		calStartDate.set(Calendar.DAY_OF_MONTH, 1);
+		// update days for week
+		int iDay = 0;
+		int iStartDay = iFirstDayOfWeek;
+		if (iStartDay == Calendar.MONDAY) {
+			iDay = calStartDate.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY;
+			if (iDay < 0)
+				iDay = 6;
+		}
+		if (iStartDay == Calendar.SUNDAY) {
+			iDay = calStartDate.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY;
+			if (iDay < 0)
+				iDay = 6;
+		}
+		calStartDate.add(Calendar.DAY_OF_WEEK, -iDay);
+		calStartDate.set(Calendar.HOUR_OF_DAY, 0);
+		calStartDate.set(Calendar.MINUTE, 0);
+		calStartDate.set(Calendar.SECOND, 0);
+		calStartDate.set(Calendar.MILLISECOND, 0);
+		return calStartDate;
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
@@ -583,10 +615,9 @@ public class NewEventActivity extends Activity{
 				connectError.show();
 				break;
 			case Primitive.ACCEPT:
-				Intent data=new Intent();  
-	            //data.putExtra("email", userInfo.getEmail());  
-	            setResult(1, data);   
-	            finish(); 
+				Calendar dateToCheck = getStartDate(calFrom,Calendar.SUNDAY);
+				String calString = dateToCheck.getTimeInMillis()+"";
+				new eventCheckAT().execute(calString,userId);
 				break;
 			case Primitive.DBCONNECTIONERROR:
 				Toast DBError = Toast.makeText(NewEventActivity.this,
@@ -612,6 +643,94 @@ public class NewEventActivity extends Activity{
 			progressDialog.show();
 		}
 	}
+	
+	class eventCheckAT extends AsyncTask<String,Integer,JSONObject>{
+
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(eventCheckUrl+"?dateTimeInMillis="+params[0] 
+					+"&userId="+params[1]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					resultJSON = new JSONObject(retSrc);
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(NewEventActivity.this,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("hasEventArray");
+					boolean hasEventArray[] = new boolean[42];
+					for(int i = 0 ; i < jArray.length() ; i++){
+					hasEventArray[i] = jArray.getBoolean(i);
+					}
+					Intent data=new Intent();  
+		            data.putExtra("hasEventArray",hasEventArray);
+		            data.putExtra("calSelected", calFrom);
+		            setResult(1, data);   
+		            finish(); 
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(NewEventActivity.this,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
+	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub

@@ -1,37 +1,16 @@
 package com.example.schedule;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.ProgressDialog;
-import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 
 public class MeFragment extends Fragment{
 
-
-	private int iFirstDayOfWeek = Calendar.SUNDAY;
 	private ScheduleCalendarView scheduleCalendarView ;
 	private Calendar calSelected = Calendar.getInstance();
 	private String userId = "";
@@ -54,7 +33,7 @@ public class MeFragment extends Fragment{
 		userId = this.getArguments().getString("userId");
 		hasEventArray = getArguments().getBooleanArray("hasEventArray");
 		scheduleCalendarView = 
-				new ScheduleCalendarView(MeFragment.this.getActivity(),hasEventArray);
+				new ScheduleCalendarView(MeFragment.this.getActivity(),hasEventArray,userId);
 		Calendar dateToCheck = scheduleCalendarView.updateStartDateForMonth();
 		dateToCheck.set(Calendar.MILLISECOND, 0);
 		dateToCheck.set(Calendar.SECOND, 0);
@@ -82,8 +61,16 @@ public class MeFragment extends Fragment{
 	}
 
 	public void update(Calendar calSelected){
+		scheduleCalendarView.setCalSelected(calSelected);
 		scheduleCalendarView.update();
 	}
-	
-
+	public void update(boolean[] hasEventArray){
+		scheduleCalendarView.setHasEventArray(hasEventArray);
+		scheduleCalendarView.update();
+	}
+	public void update(Calendar calSelected,boolean[] hasEventArray){
+		scheduleCalendarView.setCalSelected(calSelected);
+		scheduleCalendarView.setHasEventArray(hasEventArray);
+		scheduleCalendarView.update();
+	}
 }
