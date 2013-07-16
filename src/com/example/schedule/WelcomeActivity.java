@@ -18,7 +18,7 @@ public class WelcomeActivity extends Activity {
 	private static final int Go_LogIn = 1000;  
 	private static final int Go_Guide = 1001; 
 	//Splash delay time
-	private static final long SPLASH_DELAY_MILLIS = 3000; 
+	private static final long SPLASH_DELAY_MILLIS = 2000; 
 	//Preference 
 	boolean isFirstIn = false;  
 	private static final String SHAREDPREFERENCES_NAME = "first_pref";  

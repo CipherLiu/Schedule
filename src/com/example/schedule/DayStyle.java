@@ -46,6 +46,8 @@ public class DayStyle {
 	public final static int iColorTextFocused = 0xff221100;
 	public final static int iColorBkgFocusLight = 0xffffddbb;
 	public final static int iColorBkgFocusDark = 0xffaa5500;
+	
+	public final static int iColorEventMark = 0xff444444;
 
 	// methods
 	public static int getColorFrameHeader(boolean bHoliday) {
@@ -57,9 +59,9 @@ public class DayStyle {
 
 	public static int getColorTextHeader(boolean bHoliday,int iWeekDay) {
 		if (bHoliday) {
-			if (iWeekDay == Calendar.SATURDAY) 
-				return Color.RED;
-			else
+//			if (iWeekDay == Calendar.SATURDAY) 
+//				return Color.RED;
+//			else
 				return Color.RED;
 		}
 		return iColorTextHeader;
@@ -69,10 +71,10 @@ public class DayStyle {
 		if (bToday)
 			return iColorTextToday;
 		if (bHoliday) {
-			if (iDayOfWeek == Calendar.SATURDAY) {
-				return Color.RED;
-			}
-			else
+//			if (iDayOfWeek == Calendar.SATURDAY) {
+//				return Color.RED;
+//			}
+//			else
 				return Color.RED;
 		}    
 		return iColorText;

@@ -70,6 +70,7 @@ public class MeFragment extends Fragment{
 	}
 	public void update(Calendar calSelected,boolean[] hasEventArray){
 		scheduleCalendarView.setCalSelected(calSelected);
+		scheduleCalendarView.setCalFocused(calSelected);
 		scheduleCalendarView.setHasEventArray(hasEventArray);
 		scheduleCalendarView.update();
 	}

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -170,6 +171,9 @@ public class DateWidgetDayCell extends View {
 				pt.setAlpha(iAlphaInactiveMonth);
 			canvas.drawRect(rect, pt);
 		}
+		if (bHasEvent) {
+			markHasEventReminder(canvas, DayStyle.iColorEventMark);
+        }
 	}
 
 	
@@ -182,7 +186,7 @@ public class DateWidgetDayCell extends View {
 		pt.setTextSize(fTextSize);
 
 		pt.setUnderlineText(false);
-		if (bHasEvent)
+		if (bToday)
 			pt.setUnderlineText(true);
 
 		int iTextPosX = (int) rect.right - (int) pt.measureText(sDate);
@@ -211,6 +215,18 @@ public class DateWidgetDayCell extends View {
 		pt.setUnderlineText(false);
 	}
 
+	public void markHasEventReminder(Canvas canvas, int Color) {
+        pt.setStyle(Paint.Style.FILL_AND_STROKE);
+        pt.setColor(Color);
+        Path path = new Path();
+        path.moveTo(rect.right - rect.width() / 4, rect.top);
+        path.lineTo(rect.right, rect.top);
+        path.lineTo(rect.right, rect.top + rect.width() / 4);
+        path.lineTo(rect.right - rect.width() / 4, rect.top);
+        path.close();
+        canvas.drawPath(path, pt);
+    }
+	
 	public boolean IsViewFocused() {
 		return (this.isFocused() || bTouchedDown);
 	}

@@ -40,6 +40,7 @@ public class ScheduleCalendarView {
 	private Calendar calToday = Calendar.getInstance();
 	private Calendar calCalendar = Calendar.getInstance();
 	private Calendar calSelected = Calendar.getInstance();
+	private Calendar calFocused = Calendar.getInstance();
 	
 	public LinearLayout layContent = null;
 	public LinearLayout layMain = null;
@@ -67,12 +68,21 @@ public class ScheduleCalendarView {
 		this.monthTextView = monthTextView;
 	}
 
+	public Calendar getCalFocused() {
+		return calFocused;
+	}
+
+	public void setCalFocused(Calendar calFocused) {
+		this.calFocused = calFocused;
+	}
+
 	public Calendar getCalSelected() {
 		
 		return calSelected;
 	}
 	public void setCalSelected(Calendar calSelected) {
 		this.calSelected = calSelected;
+		//this.calFocused = calSelected;
 	}
 
 	public boolean[] getHasEventArray() {
@@ -93,8 +103,8 @@ public class ScheduleCalendarView {
 	}
 
 	public void updateYearMonthText(){
-		monthTextView.setText(format(calSelected.get(Calendar.MONTH)+1));
-		yearTextView.setText(" "+calSelected.get(Calendar.YEAR)+"-");
+		monthTextView.setText(format(calFocused.get(Calendar.MONTH)+1));
+		yearTextView.setText(" "+calFocused.get(Calendar.YEAR)+"-");
 	}
 
 	
@@ -188,11 +198,11 @@ public class ScheduleCalendarView {
 		calToday.setTimeInMillis(System.currentTimeMillis());
 		calToday.setFirstDayOfWeek(iFirstDayOfWeek);
 
-		if (calSelected.getTimeInMillis() == 0) {
+		if (calFocused.getTimeInMillis() == 0) {
 			calStartDate.setTimeInMillis(System.currentTimeMillis());
 			calStartDate.setFirstDayOfWeek(iFirstDayOfWeek);
 		} else {
-			calStartDate.setTimeInMillis(calSelected.getTimeInMillis());
+			calStartDate.setTimeInMillis(calFocused.getTimeInMillis());
 			calStartDate.setFirstDayOfWeek(iFirstDayOfWeek);
 		}
 		updateStartDateForMonth();
@@ -302,6 +312,8 @@ public class ScheduleCalendarView {
 		calDateToCheck.set(Calendar.SECOND, 0);
 		calDateToCheck.set(Calendar.MILLISECOND, 0);
 		String calString = calDateToCheck.getTimeInMillis()+"";
+		calFocused.set(Calendar.DAY_OF_MONTH, 1);
+		calFocused.roll(Calendar.MONTH, false);
 		new eventCheckAT().execute(calString,userId);
 	}
 
@@ -334,6 +346,8 @@ public class ScheduleCalendarView {
 		calDateToCheck.set(Calendar.SECOND, 0);
 		calDateToCheck.set(Calendar.MILLISECOND, 0);
 		String calString = calDateToCheck.getTimeInMillis()+"";
+		calFocused.set(Calendar.DAY_OF_MONTH, 1);
+		calFocused.roll(Calendar.MONTH, true);
 		new eventCheckAT().execute(calString,userId);
 		
 	}
@@ -341,11 +355,18 @@ public class ScheduleCalendarView {
 	private DateWidgetDayCell.OnItemClick mOnDayCellClick = new DateWidgetDayCell.OnItemClick() {
 		public void OnClick(DateWidgetDayCell item) {
 			calSelected.setTimeInMillis(item.getDate().getTimeInMillis());
+			calFocused.setTimeInMillis(item.getDate().getTimeInMillis());
 			item.setSelected(true);
-			updateYearMonthText();
+			Calendar calForTest = Calendar.getInstance();
+			calForTest.setTimeInMillis(calStartDate.getTimeInMillis());
 			calStartDate = getCalendarStartDate();
-			updateCalendar();
-			//updateDate();
+			if(!calStartDate.equals(calForTest)){
+				String calString = calStartDate.getTimeInMillis()+"";
+				new eventCheckAT().execute(calString,userId);
+			}else{
+				updateYearMonthText();
+				updateCalendar();
+			}
 			Intent i = new Intent(context,DateActivity.class);
 			i.putExtra("year", calSelected.get(Calendar.YEAR));
 			i.putExtra("month", calSelected.get(Calendar.MONTH)+1);
@@ -356,7 +377,7 @@ public class ScheduleCalendarView {
 	
 	private void updateCenterTextView(int iMonthViewCurrentMonth,int iMonthViewCurrentYear){
         monthTextView.setText(format(iMonthViewCurrentMonth+1)+"");
-        yearTextView.setText(" " + iMonthViewCurrentYear);
+        yearTextView.setText(" " + iMonthViewCurrentYear + "-");
 	}
 	
 	private void updateDate() {

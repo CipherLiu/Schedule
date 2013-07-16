@@ -440,7 +440,9 @@ public class NewEventActivity extends Activity{
 
 	}
 	
-	public Calendar getStartDate(Calendar calStartDate , int iFirstDayOfWeek) {
+	public Calendar getStartDate(Calendar calFrom , int iFirstDayOfWeek) {
+		Calendar calStartDate = Calendar.getInstance();
+		calStartDate.setTimeInMillis(calFrom.getTimeInMillis());
 		calStartDate.set(Calendar.DAY_OF_MONTH, 1);
 		// update days for week
 		int iDay = 0;
@@ -703,6 +705,7 @@ public class NewEventActivity extends Activity{
 					Intent data=new Intent();  
 		            data.putExtra("hasEventArray",hasEventArray);
 		            data.putExtra("calSelected", calFrom);
+		            System.out.println(calFrom);
 		            setResult(1, data);   
 		            finish(); 
 					break;
