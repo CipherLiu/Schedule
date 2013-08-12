@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.net.URLEncoder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -377,7 +378,7 @@ public class NewEventActivity extends Activity{
 			public void onFinishedRecord(String audioPath) {
 				if(tempRecordFile.exists()){
 					imgBtnRecordPlay.setEnabled(true);
-					//eventInfo.setRecord(tempRecordFile.getName());
+					eventInfo.setRecord(tempRecordFile.getName());
 				}else{
 					imgBtnRecordPlay.setEnabled(false);
 				}
@@ -504,7 +505,7 @@ public class NewEventActivity extends Activity{
 					eventInfo.setCalTo(calTo);
 					eventInfo.setUserEmail(userEmail);
 					eventInfo.setUpdateTime(Calendar.getInstance().getTimeInMillis()+"");
-					new RegisterAT().execute(eventInfo.getUserId(),eventInfo.getEventName(),
+					new EventUpdateAT().execute(eventInfo.getUserId(),eventInfo.getEventName(),
 							eventInfo.getCalFrom().getTimeInMillis()+"",
 							eventInfo.getCalTo().getTimeInMillis()+"",
 							eventInfo.getLocationName(),eventInfo.getLocationCoordinate(),
@@ -519,7 +520,7 @@ public class NewEventActivity extends Activity{
 	    return true;
 	}
 
-	class RegisterAT extends AsyncTask<String,Integer,Integer>{
+	class EventUpdateAT extends AsyncTask<String,Integer,Integer>{
 
 		@Override
 		protected Integer doInBackground(String... params) {
@@ -545,12 +546,12 @@ public class NewEventActivity extends Activity{
 					}
 					
 					MultipartEntity multipartEntity  = new MultipartEntity( );
-					if(!params[7].isEmpty()){
+					if(!params[8].isEmpty()){
 						ContentBody imageFile;
 						imageFile = new FileBody(tempImageFile);
 						multipartEntity.addPart("imageFile", imageFile);
 					}
-					if(!params[8].isEmpty()){
+					if(!params[9].isEmpty()){
 						ContentBody recordFile;
 						recordFile = new FileBody(tempRecordFile);
 						multipartEntity.addPart("recordFile", recordFile);
@@ -572,14 +573,39 @@ public class NewEventActivity extends Activity{
 					}
 					return result;
 				}else{
-					String urlParams = "?userId="+params[0]+
-							"&eventName="+params[1]+
-							"&calFrom="+params[2]+
-							"&calTo="+params[3]+
-							"&locationName="+params[4]+
-							"&locationCoordinate="+params[5]+
-							"&decription="+params[6]+
-							"&updateTime="+params[7];
+					String query = URLEncoder.encode("userId", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[0], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("eventName", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[1], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("calFrom", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[2], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("calTo", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[3], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("locationName", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[4], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("locationCoordinate", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[5], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("decription", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[6], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("updateTime", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[7], "utf-8");
+					String urlParams = "?"+query;
+					System.out.println(urlParams);
 					HttpGet httpget = new HttpGet(url+urlParams);
 					HttpResponse httpResponse = httpClient.execute(httpget);
 					int result;
@@ -705,7 +731,6 @@ public class NewEventActivity extends Activity{
 					Intent data=new Intent();  
 		            data.putExtra("hasEventArray",hasEventArray);
 		            data.putExtra("calSelected", calFrom);
-		            System.out.println(calFrom);
 		            setResult(1, data);   
 		            finish(); 
 					break;
@@ -761,12 +786,13 @@ public class NewEventActivity extends Activity{
 		        	FileOutputStream out = new FileOutputStream(tempImageFile);  
 		        	if(bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)){  
 		                out.flush();  
-		                out.close();  
+		                out.close(); 
+		                eventInfo.setPhoto(tempImageFile.getName());
 		            }
 		        } catch (Exception e) {  
 		            e.printStackTrace(); 
 		        }  
-        		//eventInfo.setPhoto(tempImageFile.getName());
+        		
         	}
             break;
         case PHOTO_REQUEST_GALLERY:
@@ -793,7 +819,8 @@ public class NewEventActivity extends Activity{
 		        	FileOutputStream out = new FileOutputStream(tempImageFile);  
 		        	if(bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)){  
 		                out.flush();  
-		                out.close();  
+		                out.close();
+		                eventInfo.setPhoto(tempImageFile.getName());
 		            }
 		        } catch (Exception e) {  
 		            e.printStackTrace(); 

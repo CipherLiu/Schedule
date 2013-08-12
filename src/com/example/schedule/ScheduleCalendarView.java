@@ -14,8 +14,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.schedule.LoginActivity.eventCheckAT;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +29,7 @@ import android.widget.LinearLayout.LayoutParams;
 
 public class ScheduleCalendarView {
 	private static String eventCheckUrl = Global.BASICURL+"EventCheck";
+	private static String oneDatEventQueryUrl = Global.BASICURL+"OneDayEventQuery";
 	private int iFirstDayOfWeek = Calendar.SUNDAY;
 	private int iMonthViewCurrentMonth = 0;
 	private int iMonthViewCurrentYear = 0;
@@ -314,7 +313,7 @@ public class ScheduleCalendarView {
 		String calString = calDateToCheck.getTimeInMillis()+"";
 		calFocused.set(Calendar.DAY_OF_MONTH, 1);
 		calFocused.roll(Calendar.MONTH, false);
-		new eventCheckAT().execute(calString,userId);
+		new EventCheckAT().execute(calString,userId);
 	}
 
 	private void setNextMonthViewItem() {
@@ -348,7 +347,7 @@ public class ScheduleCalendarView {
 		String calString = calDateToCheck.getTimeInMillis()+"";
 		calFocused.set(Calendar.DAY_OF_MONTH, 1);
 		calFocused.roll(Calendar.MONTH, true);
-		new eventCheckAT().execute(calString,userId);
+		new EventCheckAT().execute(calString,userId);
 		
 	}
 	
@@ -362,16 +361,20 @@ public class ScheduleCalendarView {
 			calStartDate = getCalendarStartDate();
 			if(!calStartDate.equals(calForTest)){
 				String calString = calStartDate.getTimeInMillis()+"";
-				new eventCheckAT().execute(calString,userId);
+				new EventCheckAT().execute(calString,userId);
 			}else{
 				updateYearMonthText();
 				updateCalendar();
 			}
-			Intent i = new Intent(context,DateActivity.class);
-			i.putExtra("year", calSelected.get(Calendar.YEAR));
-			i.putExtra("month", calSelected.get(Calendar.MONTH)+1);
-			i.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
-			context.startActivity(i);
+			Calendar calToQuery = Calendar.getInstance();
+			calToQuery.setTimeInMillis(calSelected.getTimeInMillis());
+			calToQuery.set(Calendar.HOUR_OF_DAY, 0);
+			calToQuery.set(Calendar.MINUTE, 0);
+			calToQuery.set(Calendar.SECOND, 0);
+			calToQuery.set(Calendar.MILLISECOND,0);
+			String calString = calToQuery.getTimeInMillis()+"";
+			new OneDayEventQueryAT().execute(calString,userId);
+			
 		}
 	};
 	
@@ -398,7 +401,7 @@ public class ScheduleCalendarView {
 		return s;
 	}
 	
-	class eventCheckAT extends AsyncTask<String,Integer,JSONObject>{
+	class EventCheckAT extends AsyncTask<String,Integer,JSONObject>{
 
 		@Override
 		protected JSONObject doInBackground(String... params) {
@@ -410,7 +413,9 @@ public class ScheduleCalendarView {
 				HttpResponse httpResponse = httpClient.execute(httpget);
 				JSONObject resultJSON = new JSONObject();
 				if(httpResponse.getStatusLine().getStatusCode() == 200){
-					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					String retSrc = new String(
+							EntityUtils.toByteArray(httpResponse.getEntity())
+							,"UTF-8"); 
 					resultJSON = new JSONObject(retSrc);
 				}else{
 					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
@@ -455,6 +460,92 @@ public class ScheduleCalendarView {
 					}
 					updateDate();
 					updateCenterTextView(iMonthViewCurrentMonth,iMonthViewCurrentYear);
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(context,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
+	
+	class OneDayEventQueryAT extends AsyncTask<String,Integer,JSONObject>{
+
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(oneDatEventQueryUrl+"?dateTimeInMillis="+params[0] 
+					+"&userId="+params[1]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = new String(
+							EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");
+					resultJSON = new JSONObject(retSrc);
+
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(context,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("eventArray");
+					Intent i = new Intent(context,DateActivity.class);
+					i.putExtra("year", calSelected.get(Calendar.YEAR));
+					i.putExtra("month", calSelected.get(Calendar.MONTH)+1);
+					i.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
+					i.putExtra("eventArray", jArray.toString());
+					context.startActivity(i);
 					break;
 				case Primitive.DBCONNECTIONERROR:
 					Toast DBError = Toast.makeText(context,

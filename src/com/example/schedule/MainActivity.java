@@ -147,8 +147,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				newEventIntent.putExtra("year", calSelected.get(Calendar.YEAR));
 				newEventIntent.putExtra("month", calSelected.get(Calendar.MONTH));
 				newEventIntent.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
-				newEventIntent.putExtra("hourOfDay", calSelected.get(Calendar.HOUR_OF_DAY));
-				newEventIntent.putExtra("minute", calSelected.get(Calendar.MINUTE));
+//				newEventIntent.putExtra("hourOfDay", calSelected.get(Calendar.HOUR_OF_DAY));
+//				newEventIntent.putExtra("minute", calSelected.get(Calendar.MINUTE));
+				newEventIntent.putExtra("hourOfDay", Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+				newEventIntent.putExtra("minute", Calendar.getInstance().get(Calendar.MINUTE));
 				newEventIntent.putExtra("userEmail", email);
 				newEventIntent.putExtra("userId", userId);
 				newEventIntent.setClass(MainActivity.this, NewEventActivity.class);
