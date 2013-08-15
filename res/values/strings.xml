@@ -44,4 +44,6 @@
 	<string name="title_activity_welcome">WelcomeActivity</string>
 	<string name="title_activity_guide">GuideActivity</string>
 	<string name="action_settings">Settings</string>
+	<string name="title_activity_event_detail">EventDetailActivity</string>
+	<string name="new_group">New group</string>
 </resources>
