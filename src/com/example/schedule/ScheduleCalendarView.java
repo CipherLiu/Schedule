@@ -14,10 +14,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -49,11 +51,12 @@ public class ScheduleCalendarView {
 	private static final int iDayCellWidthPartrait = 68;
 	private static final int iDayCellHeightPatrait = 82;
 	private static final int iDayHeaderHeight = 34;
-	private Context context;
+//	private Context context;
+	private MainActivity context;
 	private String userId;
 	
 	ScheduleCalendarView(Context context,boolean[] hasEventArray,String userId){
-		this.context = context;
+		this.context = (MainActivity)context;
 		this.hasEventArray = hasEventArray;
 		this.progressDialog = new ProgressDialog(this.context);
 		this.userId = userId;
@@ -544,8 +547,11 @@ public class ScheduleCalendarView {
 					i.putExtra("year", calSelected.get(Calendar.YEAR));
 					i.putExtra("month", calSelected.get(Calendar.MONTH)+1);
 					i.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
+					i.putExtra("calendar", calSelected.getTimeInMillis());
+					i.putExtra("userId", userId);
 					i.putExtra("eventArray", jArray.toString());
-					context.startActivity(i);
+					i.putExtra("groupListString", context.getGroupListString());
+					context.startActivityForResult(i,2);
 					break;
 				case Primitive.DBCONNECTIONERROR:
 					Toast DBError = Toast.makeText(context,

@@ -27,9 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.schedule.LoginActivity.eventCheckAT;
 import com.example.schedule.RecordButton.OnFinishedRecordListener;
-import com.example.schedule.RegisterActivity.RegisterAT;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -40,7 +38,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Path;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 
@@ -75,6 +72,7 @@ public class NewEventActivity extends Activity{
     private static final String IMAGE_UNSPECIFIED = "image/*";
     private static String url = Global.BASICURL+"EventUpdate";
     private static String eventCheckUrl = Global.BASICURL+"EventCheck";
+    private static String oneDatEventQueryUrl = Global.BASICURL+"OneDayEventQuery";
     private File eventImagePath = new File(Environment.getExternalStorageDirectory().getPath()+
 			"/Schedule/EventImage");
     private File eventRecordPath = new File(Environment.getExternalStorageDirectory().getPath()+
@@ -99,10 +97,12 @@ public class NewEventActivity extends Activity{
 	private SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm");
 	private int pausePosition = 0;
 	private ProgressDialog progressDialog;
-	private String userEmail,userId;
-	private List<String> groupList = new ArrayList<String>(); 
+	private String userId;
+
 	private Spinner groupSpinner;     
     private ArrayAdapter<String> spinnerAdapter;
+    private String fromAvtivityName;
+    private ArrayList<GroupInfo> groupList = new ArrayList();
 	public NewEventActivity() {
 		// TODO Auto-generated constructor stub
 	}
@@ -120,8 +120,25 @@ public class NewEventActivity extends Activity{
 		int gainDayOfMonth = gainIntent.getIntExtra("dayOfMonth",0);
 		int gainHourOfDay = gainIntent.getIntExtra("hourOfDay",0);
 		int gainMinute = gainIntent.getIntExtra("minute", 0);
-		userEmail = gainIntent.getStringExtra("userEmail");
+		fromAvtivityName = gainIntent.getStringExtra("from");
+//		userEmail = gainIntent.getStringExtra("userEmail");
 		userId = gainIntent.getStringExtra("userId");
+		String groupListString = gainIntent.getStringExtra("groupListString");
+		
+		try {
+			JSONArray jsonArray = new JSONArray(groupListString);
+			for(int i = 0; i < jsonArray.length(); i++){
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				GroupInfo group = new GroupInfo();
+				group.setId(jsonObject.getString("id"));
+				group.setName(jsonObject.getString("name"));
+				groupList.add(group);
+			}
+			
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		eventInfo.setUserId(userId);
 		etEventName = (EditText)findViewById(R.id.et_event_name);
 		etDescription= (EditText)findViewById(R.id.et_description);
@@ -145,53 +162,42 @@ public class NewEventActivity extends Activity{
 			calFrom.set(Calendar.MILLISECOND, 0);
 			calTo.set(Calendar.SECOND, 0);
 			calTo.set(Calendar.MILLISECOND, 0);
-//			dateToCheck.setTimeInMillis(calFrom.getTimeInMillis());
-//			dateToCheck.set(Calendar.HOUR_OF_DAY, 0);
-//			dateToCheck.set(Calendar.MINUTE, 0);
 			eventInfo.setCalFrom(calFrom);
 			eventInfo.setCalTo(calTo);		
 		}
 		dateTextView.setText(dfDate.format(calFrom.getTime()));
-		
-		//第一步：添加一个下拉列表项的list，这里添加的项就是下拉列表的菜单项     
-		groupList.add("北京");     
-		groupList.add("上海");     
-		groupList.add("深圳");    
-		groupList.add("南京"); 
-		groupList.add("重庆");
+		   
+		List<String> groupNameList = new ArrayList<String>(); 
+		for(int i = 0; i < groupList.size(); i++){
+			groupNameList.add(groupList.get(i).getName());
+		}
         groupSpinner = (Spinner)findViewById(R.id.sp_group);     
-        //第二步：为下拉列表定义一个适配器，这里就用到里前面定义的list。     
-        spinnerAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, groupList);     
-        //第三步：为适配器设置下拉列表下拉时的菜单样式。     
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);     
-        //第四步：将适配器添加到下拉列表上     
-        groupSpinner.setAdapter(spinnerAdapter);     
-        //第五步：为下拉列表设置各种事件的响应，这个事响应菜单被选中     
-        groupSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){     
-            //@SuppressWarnings("unchecked")  
+        spinnerAdapter = new ArrayAdapter<String>(this,
+        		android.R.layout.simple_spinner_item, groupNameList);    
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);          
+        groupSpinner.setAdapter(spinnerAdapter);
+        for(int i = 0; i < groupList.size(); i++){
+			if(groupNameList.get(i).contentEquals("default")){
+				groupSpinner.setSelection(i);}
+			
+		} 
+        groupSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){      
             public void onItemSelected(AdapterView arg0, View arg1, int arg2, long arg3) {     
-                // TODO Auto-generated method stub     
-                /* 将所选mySpinner 的值带入myTextView 中*/    
-                //myTextView.setText("您选择的是："+ adapter.getItem(arg2));     
-                /* 将mySpinner 显示*/    
-                arg0.setVisibility(View.VISIBLE);     
-            }     
-            //@SuppressWarnings("unchecked")  
+                // TODO Auto-generated method stub        
+                arg0.setVisibility(View.VISIBLE); 
+                eventInfo.setTargetGroup(groupList.get(arg2).getId());
+            }      
             public void onNothingSelected(AdapterView arg0) {     
-                // TODO Auto-generated method stub     
-                //myTextView.setText("NONE");     
+                // TODO Auto-generated method stub        
                 arg0.setVisibility(View.VISIBLE);     
             }     
         });     
- 
-        /*下拉菜单弹出的内容选项焦点改变事件处理*/    
         groupSpinner.setOnFocusChangeListener(new Spinner.OnFocusChangeListener(){     
         public void onFocusChange(View v, boolean hasFocus) {     
         // TODO Auto-generated method stub     
             v.setVisibility(View.VISIBLE);     
         }     
         });  
-		
 		
 		btnFromDate = (Button)findViewById(R.id.btn_from_date);
 		btnToDate = (Button)findViewById(R.id.btn_to_date);
@@ -503,15 +509,14 @@ public class NewEventActivity extends Activity{
 					calTo.set(Calendar.MILLISECOND, 0);
 					eventInfo.setCalFrom(calFrom);
 					eventInfo.setCalTo(calTo);
-					eventInfo.setUserEmail(userEmail);
 					eventInfo.setUpdateTime(Calendar.getInstance().getTimeInMillis()+"");
 					new EventUpdateAT().execute(eventInfo.getUserId(),eventInfo.getEventName(),
 							eventInfo.getCalFrom().getTimeInMillis()+"",
 							eventInfo.getCalTo().getTimeInMillis()+"",
 							eventInfo.getLocationName(),eventInfo.getLocationCoordinate(),
 							eventInfo.getDescription(),eventInfo.getUpdateTime(),
-							eventInfo.getPhoto(),eventInfo.getRecord()
-							);
+							eventInfo.getTargetGroup(),
+							eventInfo.getPhoto(),eventInfo.getRecord());
 				}
 				return true;
 			}
@@ -527,7 +532,7 @@ public class NewEventActivity extends Activity{
 			// TODO Auto-generated method stub
 			try {
 				HttpClient httpClient = new DefaultHttpClient();
-				if(!params[8].isEmpty() || !params[9].isEmpty()){
+				if(!params[9].isEmpty() || !params[10].isEmpty()){
 					HttpPost httpPost = new HttpPost(url);
 					JSONObject jsonEntity = new JSONObject();
 					if (params.length > 1) {
@@ -539,24 +544,27 @@ public class NewEventActivity extends Activity{
 						jsonEntity.put("locationCoordinate", params[5]);
 						jsonEntity.put("decription", params[6]);
 						jsonEntity.put("updateTime", params[7]);
-						jsonEntity.put("photo", params[8]);
-						jsonEntity.put("record", params[9]);
+						jsonEntity.put("targetGroup", params[8]);
+						jsonEntity.put("photo", params[9]);
+						jsonEntity.put("record", params[10]);
+						
 					}else{
 						jsonEntity.put("err", "error");
 					}
 					
 					MultipartEntity multipartEntity  = new MultipartEntity( );
-					if(!params[8].isEmpty()){
+					if(!params[9].isEmpty()){
 						ContentBody imageFile;
 						imageFile = new FileBody(tempImageFile);
 						multipartEntity.addPart("imageFile", imageFile);
 					}
-					if(!params[9].isEmpty()){
+					if(!params[10].isEmpty()){
 						ContentBody recordFile;
 						recordFile = new FileBody(tempRecordFile);
 						multipartEntity.addPart("recordFile", recordFile);
 					}
-				    ContentBody cbMessage = new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); ;
+				    ContentBody cbMessage = 
+				    		new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); ;
 				    multipartEntity.addPart("jsonString", cbMessage);
 				    httpPost.setEntity(multipartEntity);
 				    HttpResponse httpResponse = httpClient.execute(httpPost);
@@ -604,8 +612,12 @@ public class NewEventActivity extends Activity{
 					query += URLEncoder.encode("updateTime", "utf-8");
 					query += "=";
 					query += URLEncoder.encode(params[7], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("targetGroup", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[8], "utf-8");
+					
 					String urlParams = "?"+query;
-					System.out.println(urlParams);
 					HttpGet httpget = new HttpGet(url+urlParams);
 					HttpResponse httpResponse = httpClient.execute(httpget);
 					int result;
@@ -643,9 +655,21 @@ public class NewEventActivity extends Activity{
 				connectError.show();
 				break;
 			case Primitive.ACCEPT:
-				Calendar dateToCheck = getStartDate(calFrom,Calendar.SUNDAY);
-				String calString = dateToCheck.getTimeInMillis()+"";
-				new eventCheckAT().execute(calString,userId);
+				
+				if(fromAvtivityName.contentEquals("MainActivity")){
+					Calendar dateToCheck = getStartDate(calFrom,Calendar.SUNDAY);
+					String calString = dateToCheck.getTimeInMillis()+"";
+					new eventCheckAT().execute(calString,userId);
+				}else if(fromAvtivityName.contentEquals("DateActivity")){
+					Calendar calToQuery = Calendar.getInstance();
+					calToQuery.setTimeInMillis(getIntent().getLongExtra("calendar", 0));
+					calToQuery.set(Calendar.HOUR_OF_DAY, 0);
+					calToQuery.set(Calendar.MINUTE, 0);
+					calToQuery.set(Calendar.SECOND, 0);
+					calToQuery.set(Calendar.MILLISECOND,0);
+					String calString = calToQuery.getTimeInMillis()+"";
+					new OneDayEventQueryAT().execute(calString,userId);
+				}
 				break;
 			case Primitive.DBCONNECTIONERROR:
 				Toast DBError = Toast.makeText(NewEventActivity.this,
@@ -731,6 +755,90 @@ public class NewEventActivity extends Activity{
 					Intent data=new Intent();  
 		            data.putExtra("hasEventArray",hasEventArray);
 		            data.putExtra("calSelected", calFrom);
+		            setResult(1, data);   
+		            finish(); 
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(NewEventActivity.this,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
+	
+	class OneDayEventQueryAT extends AsyncTask<String,Integer,JSONObject>{
+
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(oneDatEventQueryUrl+"?dateTimeInMillis="+params[0] 
+					+"&userId="+params[1]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = new String(
+							EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");
+					resultJSON = new JSONObject(retSrc);
+
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(NewEventActivity.this,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("eventArray");
+					Intent data=new Intent();  
+		            data.putExtra("eventArray",jArray.toString());
 		            setResult(1, data);   
 		            finish(); 
 					break;

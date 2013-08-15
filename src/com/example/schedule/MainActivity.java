@@ -17,7 +17,6 @@ import org.json.JSONObject;
 
 
 import com.example.schedule.R;
-import com.example.schedule.NewEventActivity.eventCheckAT;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -55,6 +54,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     ViewPager mViewPager;
     private static String eventCheckUrl = Global.BASICURL+"EventCheck";
     private boolean hasEventArray[] = new boolean[42];
+    private String socialEventArrayString; 
+//    private EventInfo socialEventArray[] = new EventInfo[10];
+//    private ArrayList<GroupInfo> groupList = new ArrayList();
+    private String groupListString;
     private String email,userId;
     private Calendar calSelected = Calendar.getInstance();
     private Calendar calToday = Calendar.getInstance();
@@ -63,8 +66,40 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	private ContactsFragment groupFragment = new ContactsFragment();
 	private ProgressDialog progressDialog;
     
-    public String getEmail() {
+//    public ArrayList<GroupInfo> getGroupList() {
+//		return groupList;
+//	}
+//
+//    public String getGroupListString(){
+//    	JSONArray jsonArray = new JSONArray();
+//    	for(int i = 0; i < groupList.size(); i++){
+//    		JSONObject jObject = new JSONObject();
+//    		try {
+//				jObject.put("id", groupList.get(i).getId());
+//				jObject.put("name", groupList.get(i).getName());
+//				jsonArray.put(jObject);
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//    	}
+//    	return jsonArray.toString();
+//    }
+//    
+//	public void setGroupList(ArrayList<GroupInfo> groupList) {
+//		this.groupList = groupList;
+//	}
+
+	public String getEmail() {
 		return email;
+	}
+
+	public String getGroupListString() {
+		return groupListString;
+	}
+
+	public void setGroupListString(String groupListString) {
+		this.groupListString = groupListString;
 	}
 
 	public void setEmail(String email) {
@@ -95,8 +130,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         email = extras.getString("email");
         userId = extras.getString("userId");
         hasEventArray = extras.getBooleanArray("hasEventArray");
+        groupListString = extras.getString("groupListString");
+        socialEventArrayString = extras.getString("socialEventArrayString");
         progressDialog = new ProgressDialog(MainActivity.this); 
-//        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         // Create the adapter that will return a fragment for each of the three primary sections
         // of the app.
@@ -153,6 +189,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				newEventIntent.putExtra("minute", Calendar.getInstance().get(Calendar.MINUTE));
 				newEventIntent.putExtra("userEmail", email);
 				newEventIntent.putExtra("userId", userId);
+				newEventIntent.putExtra("groupListString",groupListString);
+				newEventIntent.putExtra("from", "MainActivity");
 				newEventIntent.setClass(MainActivity.this, NewEventActivity.class);
 				startActivityForResult(newEventIntent , 1);
 				return true;
@@ -297,6 +335,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             	return whatsNewFragment;
             case 2:
             	//Fragment groupFragment = new GroupFragment();
+            	Bundle bundleToGroup = new Bundle();
+            	bundleToGroup.putString("userId", userId);
+            	bundleToGroup.putString("groupListString", groupListString);
+            	groupFragment.setArguments(bundleToGroup);
             	return groupFragment;
             }
 			return null;
@@ -327,6 +369,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 			hasEventArray = extras.getBooleanArray("hasEventArray");
 			Calendar calSeclected = (Calendar)extras.get("calSelected");
 			myScheduleFragment.update(calSeclected ,hasEventArray);
+		}else if(requestCode == 2 && resultCode == 1){
+			if(data != null){
+				Bundle extras = data.getExtras();
+				hasEventArray = extras.getBooleanArray("hasEventArray");
+				Calendar calSeclected = (Calendar)extras.get("calSelected");
+				myScheduleFragment.update(calSeclected ,hasEventArray);
+			}
 		}
 	}
     

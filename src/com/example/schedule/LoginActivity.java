@@ -33,8 +33,13 @@ import android.widget.Toast;
 public class LoginActivity extends Activity {
 
 	private static String eventCheckUrl = Global.BASICURL+"EventCheck";
+	private static String groupCheckUrl = Global.BASICURL+"GroupCheck";
+	private static String socialCheckUrl = Global.BASICURL+"SocialCheck";
 	private ProgressDialog progressDialog;
 	private boolean hasEventArray[] = new boolean[42];
+	private EventInfo socialEventArray[] = new EventInfo[10];
+	private ArrayList<GroupInfo> groupList = new ArrayList();
+	private String groupListString;
 	private Button btnLogin,btnRegister;
 	private EditText etEmail,etPassword;
 	private String email,password,userId;
@@ -79,14 +84,14 @@ public class LoginActivity extends Activity {
 						     "Please input your password", Toast.LENGTH_LONG);
 					noPassword.setGravity(Gravity.CENTER, 0, 0);
 					noPassword.show();
-				}else if(email.contentEquals("liu")&&password.contentEquals("liu")){
-					Intent intent = new Intent();
-					intent.putExtra("email", "admin");
-					intent.putExtra("userId", "001");
-					boolean hasEventArray[] = new boolean[42];
-					intent.putExtra("hasEventArray", hasEventArray);
-					intent.setClass(LoginActivity.this, MainActivity.class);
-					LoginActivity.this.startActivity(intent);
+//				}else if(email.contentEquals("liu")&&password.contentEquals("liu")){
+//					Intent intent = new Intent();
+//					intent.putExtra("email", "admin");
+//					intent.putExtra("userId", "001");
+//					boolean hasEventArray[] = new boolean[42];
+//					intent.putExtra("hasEventArray", hasEventArray);
+//					intent.setClass(LoginActivity.this, MainActivity.class);
+//					LoginActivity.this.startActivity(intent);
 				}else{
 					new LoginAT().execute(email,password);
 				}
@@ -211,7 +216,7 @@ public class LoginActivity extends Activity {
 					userId = result.getString("userId");
 					Calendar dateToCheck = getStartDate(Calendar.getInstance(),Calendar.SUNDAY);
 					String calString = dateToCheck.getTimeInMillis()+"";
-					new eventCheckAT().execute(calString,result.getString("userId"));
+					new EventCheckAT().execute(calString,result.getString("userId"));
 					
 					break;
 				case Primitive.DBCONNECTIONERROR:
@@ -246,7 +251,7 @@ public class LoginActivity extends Activity {
 		}
 	}
 	
-	class eventCheckAT extends AsyncTask<String,Integer,JSONObject>{
+	class EventCheckAT extends AsyncTask<String,Integer,JSONObject>{
 
 		@Override
 		protected JSONObject doInBackground(String... params) {
@@ -301,10 +306,184 @@ public class LoginActivity extends Activity {
 					for(int i = 0 ; i < jArray.length() ; i++){
 					hasEventArray[i] = jArray.getBoolean(i);
 					}
+					new GroupCheckAT().execute(userId);
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(LoginActivity.this,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
+	
+	class GroupCheckAT extends AsyncTask<String,Integer,JSONObject>{
+
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(groupCheckUrl+"?userId="+params[0]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					resultJSON = new JSONObject(retSrc);
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(LoginActivity.this,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("groupList");
+					groupListString = jArray.toString();
+					for(int i = 0 ; i < jArray.length() ; i++){
+						JSONObject jsonObject = (JSONObject)jArray.get(i);
+						GroupInfo group = new GroupInfo();
+						group.setId(jsonObject.getString("_id"));
+						group.setName(jsonObject.getString("groupName"));
+						groupList.add(group);
+						
+					}
+					Calendar dateToCheck = getStartDate(Calendar.getInstance(),Calendar.SUNDAY);
+					String calString = dateToCheck.getTimeInMillis()+"";
+					new SocialCheckAT().execute(calString , userId);
+					break;
+				case Primitive.DBCONNECTIONERROR:
+					Toast DBError = Toast.makeText(LoginActivity.this,
+						     "Server database error", Toast.LENGTH_LONG);
+					DBError.setGravity(Gravity.CENTER, 0, 0);
+					DBError.show();
+					break;	
+				default:
+					break;
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			progressDialog.cancel();
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			progressDialog.show();
+		}
+		
+	}
+	
+	class SocialCheckAT extends AsyncTask<String,Integer,JSONObject>{
+
+		@Override
+		protected JSONObject doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(socialCheckUrl+"?dateTimeInMillis="+params[0] 
+					+"&userId="+params[1]);
+			try {
+				HttpResponse httpResponse = httpClient.execute(httpget);
+				JSONObject resultJSON = new JSONObject();
+				if(httpResponse.getStatusLine().getStatusCode() == 200){
+					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					resultJSON = new JSONObject(retSrc);
+				}else{
+					resultJSON.put("result", Primitive.CONNECTIONREFUSED);
+				}
+				if (httpClient != null) {
+					httpClient.getConnectionManager().shutdown();
+				}
+				return resultJSON;
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(JSONObject result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			progressDialog.cancel();
+			int resultCode;
+			try {
+				resultCode = result.getInt("result");
+				
+				switch(resultCode){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(LoginActivity.this,
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					JSONArray jArray = result.getJSONArray("socialEventArray");
+					for(int i = 0 ; i < jArray.length() ; i++){
+						JSONObject eventObject = (JSONObject)jArray.get(i);
+						socialEventArray[i] = getEventInfoFromJSON(eventObject);
+					}
 					Intent intent = new Intent();
 					intent.putExtra("email",email);
 					intent.putExtra("userId",userId);
 					intent.putExtra("hasEventArray", hasEventArray);
+					intent.putExtra("socialEventArrayString", jArray.toString());
+					intent.putExtra("groupListString", groupListString);
 					intent.setClass(LoginActivity.this, MainActivity.class);
 					LoginActivity.this.startActivity(intent);
 					break;
@@ -331,5 +510,52 @@ public class LoginActivity extends Activity {
 			progressDialog.show();
 		}
 		
+	}
+	
+    public String getGroupListString(){
+    	JSONArray jsonArray = new JSONArray();
+    	for(int i = 0; i < groupList.size(); i++){
+    		JSONObject jObject = new JSONObject();
+    		try {
+				jObject.put("id", groupList.get(i).getId());
+				jObject.put("name", groupList.get(i).getName());
+				jsonArray.put(jObject);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	return jsonArray.toString();
+    }
+	
+	private EventInfo getEventInfoFromJSON(JSONObject eventObject){
+		EventInfo event = new EventInfo();
+		try {
+			long fromTimeMillis = eventObject.getLong("calFrom");
+			long toTimeMillis = eventObject.getLong("calTo");
+			Calendar calFrom = Calendar.getInstance();
+			calFrom.setTimeInMillis(fromTimeMillis);
+			Calendar calTo = Calendar.getInstance();
+			calTo.setTimeInMillis(toTimeMillis);
+			String eventId = eventObject.getString("_id");
+			String eventName = eventObject.getString("eventName");
+			String eventContent = eventObject.getString("decription");
+			String locationName = eventObject.getString("locationName");
+			String photo = eventObject.getString("photo");
+			String record = eventObject.getString("record");
+			event.setCalFrom(calFrom);
+			event.setCalTo(calTo);
+			event.setEventName(eventName);
+			event.setEventId(eventId);
+			event.setDescription(eventContent);
+			event.setPhoto(photo);
+			event.setRecord(record);
+			event.setLocationName(locationName);
+			return event;
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

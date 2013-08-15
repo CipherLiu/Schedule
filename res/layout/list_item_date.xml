@@ -4,79 +4,112 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/ll_date_list_item_root"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:descendantFocusability="blocksDescendants">
     <LinearLayout 
         android:id="@+id/ll_date_list_item_duration"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:clickable="false" 
+        android:focusableInTouchMode="false">
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/tv_date_list_item_time_begin"
-            android:text="2013.12.12 00:00 - "
-            android:background="#dddddd"/>
+            android:background="#dddddd"
+            android:textColor="#900510"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#dddddd"
+            android:text="  -  "
+            android:textColor="#900510"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
         <TextView 
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/tv_date_list_item_time_end"
-            android:text="2012.12.12.00:10"
-            android:background="#dddddd"/>
+            android:background="#dddddd"
+            android:textColor="#900510"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
     </LinearLayout>
-<!--      <TextView 
-            android:layout_width="fill_parent"
-			android:layout_height="1dp"
-            android:background="#000000"/>
-            -->
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/rl_date_list_item_content"
-        android:background="#aaaaaa">
+        android:background="#aaaaaa"
+        android:clickable="false" 
+        android:focusableInTouchMode="false"
+        android:focusable="false">
         <TextView 
             android:id="@+id/tv_date_list_item_event_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"/>
+            android:layout_alignParentLeft="true"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"
+            android:layout_marginLeft="5dp"/>
         <TextView
             android:id="@+id/tv_date_list_item_event_content" 
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
             android:background="@drawable/event_bg"
-            android:layout_below="@+id/tv_date_list_item_event_name"/>
-        <RelativeLayout
-            android:id="@+id/iv_date_list_item_event_bottom"
+            android:layout_below="@+id/tv_date_list_item_event_name"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
+        <ImageView
+            android:id="@+id/iv_date_list_item_event_photo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_date_list_item_event_content"
-            android:visibility="invisible">
-            <ImageView 
-            	android:id="@+id/iv_date_list_item_event_attachment"
-            	android:layout_height="wrap_content"
-            	android:layout_width="wrap_content"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false"/>
+        <RelativeLayout
+            android:id="@+id/rl_date_list_item_event_bottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_date_list_item_event_content"
+            android:clickable="false" 
+            android:focusableInTouchMode="false"
+            android:focusable="false">
+            <ImageButton
+            	android:id="@+id/btn_date_list_item_event_record_play"
+            	android:layout_height="48dp"
+            	android:layout_width="48dp"
             	android:layout_alignParentTop="true"
             	android:layout_alignParentLeft="true"
-            	android:src="@drawable/attachement"/>
+            	android:src="@drawable/record_play"/>
         	<TextView 
-            	android:id="@+id/iv_date_list_item_event_location_name"
+            	android:id="@+id/tv_date_list_item_event_location_name"
             	android:layout_height="wrap_content"
             	android:layout_width="wrap_content"
             	android:layout_alignParentTop="true"
-            	android:layout_alignParentRight="true"/>
+            	android:layout_alignParentRight="true"
+            	android:clickable="false" 
+            	android:focusableInTouchMode="false"
+            	android:focusable="false"/>
         	<ImageView 
             	android:id="@+id/iv_date_list_item_event_location"
             	android:layout_height="wrap_content"
             	android:layout_width="wrap_content"
             	android:layout_alignParentTop="true"
             	android:layout_toLeftOf="@+id/iv_date_list_item_event_location_name"
-            	android:src="@drawable/location_pin"/>
+            	android:clickable="false" 
+            	android:focusableInTouchMode="false"
+            	android:focusable="false"/>
         </RelativeLayout>
                 
     </RelativeLayout>
-<!--      <TextView 
-            android:layout_width="fill_parent"
-			android:layout_height="1dp"
-            android:background="#000000"/>
-            -->
 </LinearLayout>

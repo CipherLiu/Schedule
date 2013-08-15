@@ -16,7 +16,14 @@ public class EventInfo {
 	private String record;
 	private String photo;
 	private String description;
+	private String targetGroup;
 	
+	public String getTargetGroup() {
+		return targetGroup;
+	}
+	public void setTargetGroup(String targetGroup) {
+		this.targetGroup = targetGroup;
+	}
 	public EventInfo() {
 		
 		this.userEmail = "";
