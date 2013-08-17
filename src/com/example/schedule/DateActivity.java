@@ -1,6 +1,7 @@
 package com.example.schedule;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,8 +27,11 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,12 +39,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -425,7 +431,14 @@ public class DateActivity extends Activity {
             TextView tvEventName = (TextView) convertView.findViewById(
             		R.id.tv_date_list_item_event_name);  
             TextView tvEventContent = (TextView) convertView.findViewById(
-            		R.id.tv_date_list_item_event_content);  
+            		R.id.tv_date_list_item_event_content); 
+            ImageButton iBtnRecordPaly = (ImageButton)convertView.findViewById(
+            		R.id.btn_date_list_item_event_record_play);
+            if(!event.getRecord().contentEquals("null")){
+            	iBtnRecordPaly.setVisibility(View.VISIBLE);
+            	RecordPlayClickListener listener = new RecordPlayClickListener(event.getRecord());
+            	iBtnRecordPaly.setOnClickListener(listener);
+            } 
             tvEventName.setText(event.getEventName());  
             tvEventContent.setText(event.getDescription());
             tvTimeBegin.setText(dateFormat(event.getCalFrom().getTime()));
@@ -434,8 +447,8 @@ public class DateActivity extends Activity {
             	ivEventPhoto.setBackgroundResource(R.drawable.no_event_photo);
             	syncImageLoader.loadImage(position, eventImageUrl + event.getPhoto(),  
                         imageLoadListener, event.getPhoto()); 
-            	} 
-             
+            }
+            
             return convertView;  
         }  
   
@@ -501,5 +514,75 @@ public class DateActivity extends Activity {
             }  
         };  
     } 
+	class RecordPlayClickListener implements OnClickListener{
 
+		private String fileName;
+		private ImageButton imgBtnRecordPlay;
+		private int pausePosition;
+		private File eventRecordPath;
+		private File tempRecordFile;
+		RecordPlayClickListener(String fileName){
+			this.fileName = fileName;
+			this.eventRecordPath = new File(Environment.getExternalStorageDirectory().getPath()+
+					"/Schedule/tempEventRecord");
+			try{
+				eventRecordPath.mkdirs();
+		       }catch(Exception e){
+		    	   Toast buildPathError = Toast.makeText(DateActivity.this,
+						     "Error occured when build file path", Toast.LENGTH_LONG);
+		    	   buildPathError.setGravity(Gravity.CENTER, 0, 0);
+		    	   buildPathError.show();
+		       } 
+			this.tempRecordFile = new File(eventRecordPath, fileName);
+		}
+		public void onClick(View v) {
+    		
+			// TODO Auto-generated method stub
+    		imgBtnRecordPlay = (ImageButton)v;
+    		MediaPlayer mediaPlayer = new MediaPlayer();
+    		if(mediaPlayer.isPlaying()){
+				mediaPlayer.pause();
+				pausePosition = mediaPlayer.getCurrentPosition();
+				imgBtnRecordPlay.setImageResource(R.drawable.record_play);
+			}else{
+				if(pausePosition == 0){
+					try {
+						mediaPlayer = new MediaPlayer();
+						mediaPlayer.setDataSource(tempRecordFile.getAbsolutePath());
+						mediaPlayer.prepare();
+						mediaPlayer.start();
+						mediaPlayer.setOnCompletionListener(new OnCompletionListener(){
+
+							public void onCompletion(MediaPlayer mp) {
+								// TODO Auto-generated method stub
+								imgBtnRecordPlay.setImageResource(R.drawable.record_play);
+							}
+						});
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}else{
+					try {
+						mediaPlayer = new MediaPlayer();
+						mediaPlayer.setDataSource(tempRecordFile.getAbsolutePath());
+						mediaPlayer.prepare();
+						mediaPlayer.seekTo(pausePosition);
+						mediaPlayer.start();
+						mediaPlayer.setOnCompletionListener(new OnCompletionListener(){
+
+							public void onCompletion(MediaPlayer mp) {
+								// TODO Auto-generated method stub
+								imgBtnRecordPlay.setImageResource(R.drawable.record_play);
+								pausePosition = 0;
+							}
+						});
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				imgBtnRecordPlay.setImageResource(R.drawable.pause);
+			}
+		}
+		
+	}
 }

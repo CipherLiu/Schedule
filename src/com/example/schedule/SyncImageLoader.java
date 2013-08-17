@@ -135,7 +135,7 @@ public class SyncImageLoader {
 	public static Drawable loadImageFromUrl(String url,String fileName) throws IOException {
 		//是否SD卡可用
 		if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-			//检查是或有保存图片的文件夹，没有就穿件一个
+			//检查是或有保存图片的文件夹，没有就创建一个
 			String FileUrl = Environment.getExternalStorageDirectory()+"/Schedule/Images";
 			File folder = new File(FileUrl);
 			if(!folder.exists()){

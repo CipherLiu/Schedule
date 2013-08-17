@@ -114,54 +114,6 @@ public class RegisterActivity extends Activity {
                 imageChanged = true;
 			}			
 		});
-//		btnRegisterOK.setOnClickListener(new OnClickListener(){
-//
-//			
-//			public void onClick(View v) {
-//				// TODO Auto-generated method stub
-//				email = etEmail.getText().toString();
-//				password = etPassword.getText().toString();
-//				passwordConfirm = etPasswordConfirm.getText().toString();
-//				username = etUsername.getText().toString();
-//				if(email.isEmpty()){
-//					Toast noEmial = Toast.makeText(RegisterActivity.this,
-//						     "Please input your e-mail", Toast.LENGTH_LONG);
-//					noEmial.setGravity(Gravity.CENTER, 0, 0);
-//					noEmial.show();
-//				}else if(password.isEmpty()){
-//					Toast noPassword = Toast.makeText(RegisterActivity.this,
-//						     "Please input your password", Toast.LENGTH_LONG);
-//					noPassword.setGravity(Gravity.CENTER, 0, 0);
-//					noPassword.show();
-//				}else if(passwordConfirm.isEmpty()){
-//					Toast noPasswordConfirm = Toast.makeText(RegisterActivity.this,
-//						     "Please confirm your password", Toast.LENGTH_LONG);
-//					noPasswordConfirm.setGravity(Gravity.CENTER, 0, 0);
-//					noPasswordConfirm.show();
-//				}else{
-//					if(password.compareTo(passwordConfirm) == 0){
-//						userInfo.setEmail(email);
-//						userInfo.setPassword(password);
-//						if(username.isEmpty())
-//							username = email;
-//						userInfo.setUsername(username);
-//						if(imageChanged){
-//				            userInfo.setImage(tempFile.getName());
-//						}else{
-//							userInfo.setImage("none");
-//						}
-//						new RegisterAT().execute(userInfo.getEmail(),userInfo.getPassword(),
-//								userInfo.getUsername(),userInfo.getImage());
-//						 	
-//					}else{
-//						Toast PasswordConfirmError = Toast.makeText(RegisterActivity.this,
-//							     "Password confirm failure", Toast.LENGTH_LONG);
-//						PasswordConfirmError.setGravity(Gravity.CENTER, 0, 0);
-//						PasswordConfirmError.show();
-//					}
-//				}
-//			}		
-//		});
 	}
 
 	@Override
@@ -333,11 +285,11 @@ public class RegisterActivity extends Activity {
 						jsonEntity.put("err", "error");
 					}
 					MultipartEntity multipartEntity  = new MultipartEntity( );
+				    ContentBody cbMessage = new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); ;
+				    multipartEntity.addPart("jsonString", cbMessage);
 					ContentBody cbFile;
 					cbFile = new FileBody(tempFile, "image/jpg");
 					multipartEntity.addPart("imgFile", cbFile);
-				    ContentBody cbMessage = new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); ;
-				    multipartEntity.addPart("jsonString", cbMessage);
 				    httpPost.setEntity(multipartEntity);
 				    HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;

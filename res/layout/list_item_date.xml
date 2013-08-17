@@ -17,7 +17,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/tv_date_list_item_time_begin"
-            android:background="#dddddd"
             android:textColor="#900510"
             android:clickable="false" 
             android:focusableInTouchMode="false"
@@ -25,7 +24,6 @@
         <TextView 
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#dddddd"
             android:text="  -  "
             android:textColor="#900510"
             android:clickable="false" 
@@ -35,7 +33,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/tv_date_list_item_time_end"
-            android:background="#dddddd"
             android:textColor="#900510"
             android:clickable="false" 
             android:focusableInTouchMode="false"
@@ -45,7 +42,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/rl_date_list_item_content"
-        android:background="#aaaaaa"
         android:clickable="false" 
         android:focusableInTouchMode="false"
         android:focusable="false">
@@ -58,58 +54,65 @@
             android:clickable="false" 
             android:focusableInTouchMode="false"
             android:focusable="false"
-            android:layout_marginLeft="5dp"/>
-        <TextView
-            android:id="@+id/tv_date_list_item_event_content" 
-            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:textColor="#051090"
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+        <LinearLayout 
             android:layout_width="fill_parent"
-            android:background="@drawable/event_bg"
-            android:layout_below="@+id/tv_date_list_item_event_name"
-            android:clickable="false" 
-            android:focusableInTouchMode="false"
-            android:focusable="false"/>
-        <ImageView
-            android:id="@+id/iv_date_list_item_event_photo"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_date_list_item_event_content"
-            android:clickable="false" 
-            android:focusableInTouchMode="false"
-            android:focusable="false"/>
+            android:id="@+id/ll_date_list_item_event_content"
+            android:orientation="vertical"
+            android:background="@drawable/event_bg"
+            android:layout_below="@+id/tv_date_list_item_event_name">
+            <TextView
+            	android:id="@+id/tv_date_list_item_event_content" 
+           		android:layout_height="wrap_content"
+            	android:layout_width="fill_parent"
+            	android:clickable="false" 
+            	android:focusableInTouchMode="false"
+            	android:focusable="false"
+            	android:textSize="15sp"
+            	android:layout_marginLeft="5dp"/>
+        	<ImageView
+            	android:id="@+id/iv_date_list_item_event_photo"
+            	android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"
+            	android:clickable="false" 
+            	android:focusableInTouchMode="false"
+            	android:focusable="false"
+            	android:layout_marginLeft="5dp"
+            	android:layout_marginRight="5dp"/>
+        </LinearLayout>
+        
         <RelativeLayout
+            android:layout_alignParentBottom="true"
             android:id="@+id/rl_date_list_item_event_bottom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_date_list_item_event_content"
+            android:layout_below="@+id/ll_date_list_item_event_content"
             android:clickable="false" 
             android:focusableInTouchMode="false"
             android:focusable="false">
             <ImageButton
             	android:id="@+id/btn_date_list_item_event_record_play"
-            	android:layout_height="48dp"
-            	android:layout_width="48dp"
+            	android:layout_height="35dp"
+            	android:layout_width="35dp"
             	android:layout_alignParentTop="true"
             	android:layout_alignParentLeft="true"
-            	android:src="@drawable/record_play"/>
-        	<TextView 
-            	android:id="@+id/tv_date_list_item_event_location_name"
-            	android:layout_height="wrap_content"
+            	android:src="@drawable/record_play"
+            	android:visibility="invisible"/>
+            <Button
+            	android:id="@+id/btn_date_list_item_event_comment"
+            	android:layout_height="35dp"
             	android:layout_width="wrap_content"
             	android:layout_alignParentTop="true"
             	android:layout_alignParentRight="true"
             	android:clickable="false" 
             	android:focusableInTouchMode="false"
-            	android:focusable="false"/>
-        	<ImageView 
-            	android:id="@+id/iv_date_list_item_event_location"
-            	android:layout_height="wrap_content"
-            	android:layout_width="wrap_content"
-            	android:layout_alignParentTop="true"
-            	android:layout_toLeftOf="@+id/iv_date_list_item_event_location_name"
-            	android:clickable="false" 
-            	android:focusableInTouchMode="false"
-            	android:focusable="false"/>
-        </RelativeLayout>
-                
+            	android:focusable="false"
+            	android:text="@+string/comments"
+            	android:textSize="12sp"/>
+        </RelativeLayout>             
     </RelativeLayout>
 </LinearLayout>

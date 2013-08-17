@@ -2,18 +2,15 @@
 <ScrollView 
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:fillViewport="true">
        <LinearLayout  
         	android:layout_width="fill_parent"
         	android:layout_height="wrap_content"
         	android:id="@+id/new_event_root"
         	android:orientation="vertical"
         	android:background="@+drawable/page_bg">
-        	<LinearLayout 
-        	    android:layout_width="fill_parent"
-        	    android:layout_height="wrap_content"
-        	    android:orientation="horizontal">
-        	    <TextView 
+        	<TextView 
         	    	android:id="@+id/tv_new_event_date"
         	    	android:layout_width="wrap_content"
         	    	android:layout_height="wrap_content"
@@ -23,10 +20,21 @@
         	    	android:textIsSelectable="true"
         	    	android:textColor="#900510"
         	    	android:textStyle="bold"/>
+        	<LinearLayout 
+        	    android:layout_width="fill_parent"
+        	    android:layout_height="wrap_content"
+        	    android:orientation="vertical">
+        	    <TextView 
+        	    	android:layout_height="wrap_content"
+        	        android:layout_width="wrap_content"        	        
+        	        android:layout_marginLeft="5dp"
+        	        android:textSize="12sp"
+        	        android:textStyle="bold"
+        	        android:text="@+string/new_event_group_name"/>
         	    <Spinner 
         	        android:id="@+id/sp_group"
 					android:layout_width="fill_parent"
-					android:layout_height="wrap_content"
+					android:layout_height="fill_parent"
 					android:text="@+string/all"
 					android:drawSelectorOnTop="true" 
 					android:prompt="@+string/choose_group"/>
@@ -34,90 +42,98 @@
         	<LinearLayout 
         		android:layout_width="fill_parent"
         		android:layout_height="wrap_content"
-        		android:orientation="horizontal">
+        		android:orientation="vertical">
         	    <TextView 
         	        android:id="@+id/tv_event_name"
         	        android:layout_height="wrap_content"
         	        android:layout_width="90dp"        	        
         	        android:layout_marginLeft="5dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/event_name"/>
         	    <EditText
         	        android:hint="@+string/event_name"
         	        android:layout_height="wrap_content"
         	        android:id="@+id/et_event_name"
-        	        android:layout_width="match_parent"
+        	        android:layout_width="fill_parent"
         	        android:layout_marginRight="5dp"/>
         	</LinearLayout>
         	<LinearLayout 
         		android:layout_width="fill_parent"
         		android:layout_height="wrap_content"
-        		android:orientation="horizontal"
-        		android:layout_marginBottom="5dp">
+        		android:orientation="vertical">
         	    <TextView 
         	        android:id="@+id/tv_event_description"
         	        android:layout_height="wrap_content"
         	        android:layout_width="90dp"        	        
         	        android:layout_marginLeft="5dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/description"/>
         	    <EditText
         	        android:hint="@+string/description"
         	        android:layout_height="wrap_content"
         	        android:id="@+id/et_description"
-        	        android:layout_width="match_parent"
+        	        android:layout_width="fill_parent"
         	        android:layout_marginRight="5dp"/>
         	</LinearLayout>
         	<LinearLayout 
         	    android:layout_width="fill_parent"
         		android:layout_height="wrap_content"
-        		android:orientation="horizontal">
+        		android:orientation="vertical">
         	    <TextView 
         	        android:id="@+id/tv_from"
         	        android:layout_height="wrap_content"
         	        android:layout_width="50dp"        	        
         	        android:layout_marginLeft="5dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/from"/>
-        	    <Button 
-        	        android:id="@+id/btn_from_date"
-        	        android:layout_height="wrap_content"
-        	        android:layout_width="150dp"
-        	        android:layout_marginRight="5dp"/>
-        	    <Button 
-        	        android:id="@+id/btn_from_time"
-        	        android:layout_height="wrap_content"
-        	        android:layout_width="match_parent"
-        	        android:layout_marginRight="5dp"/>
-        	            	    
+        	    <LinearLayout 
+        	        android:orientation="horizontal"
+        	        android:layout_width="fill_parent"
+        			android:layout_height="wrap_content">
+        	        <Button 
+        	        	android:id="@+id/btn_from_date"
+        	        	android:layout_height="wrap_content"
+        	        	android:layout_width="150dp"
+        	        	android:layout_marginRight="5dp"/>
+        	    	<Button 
+        	        	android:id="@+id/btn_from_time"
+        	        	android:layout_height="wrap_content"
+        	        	android:layout_width="match_parent"
+        	        	android:layout_marginRight="5dp"/>
+        	    </LinearLayout>
         	</LinearLayout>
             <LinearLayout 
         	    android:layout_width="fill_parent"
         		android:layout_height="wrap_content"
-        		android:orientation="horizontal"
-        		android:layout_marginBottom="5dp">
+        		android:orientation="vertical">
         	    <TextView 
         	        android:id="@+id/tv_to"
         	        android:layout_height="wrap_content"
         	        android:layout_width="50dp"        	        
         	        android:layout_marginLeft="5dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/to"/>
-        	    <Button 
-        	        android:id="@+id/btn_to_date"
-        	        android:layout_height="wrap_content"
-        	        android:layout_width="150dp"
-        	        android:layout_marginRight="5dp"/>
-        	    <Button 
-        	        android:id="@+id/btn_to_time"
-        	        android:layout_height="wrap_content"
-        	        android:layout_width="match_parent"
-        	        android:layout_marginRight="5dp"/>      	            	    
+        	    <LinearLayout 
+        	        android:orientation="horizontal"
+        	        android:layout_width="fill_parent"
+        			android:layout_height="wrap_content">
+        	    	<Button 
+        	        	android:id="@+id/btn_to_date"
+        	        	android:layout_height="wrap_content"
+        	        	android:layout_width="150dp"
+        	        	android:layout_marginRight="5dp"/>
+        	    	<Button 
+        	        	android:id="@+id/btn_to_time"
+        	        	android:layout_height="wrap_content"
+        	        	android:layout_width="match_parent"
+        	        	android:layout_marginRight="5dp"/>  
+        	    </LinearLayout>    	            	    
         	</LinearLayout>
+<!--         	
         	<RelativeLayout
         	    android:layout_width="fill_parent"
         		android:layout_height="wrap_content"
@@ -150,18 +166,17 @@
         	        android:layout_alignParentRight="true"
         	        android:contentDescription="@string/location"/>
         	</RelativeLayout>
+--> 
        		<RelativeLayout
         	    android:layout_width="fill_parent"
-        		android:layout_height="wrap_content"
-        		android:layout_marginBottom="5dp">
+        		android:layout_height="wrap_content">
         	    <TextView 
         	        android:id="@+id/tv_record"
         	        android:layout_height="wrap_content"
         	        android:layout_width="80dp"        	        
         	        android:layout_marginLeft="5dp"
         	        android:layout_marginRight="2dp"
-        	        android:layout_marginTop="10dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/record"
         	        android:layout_alignParentLeft="true"/>
@@ -172,7 +187,7 @@
         	        android:layout_height="wrap_content"
         	        android:layout_marginRight="5dp"
         	        android:layout_toLeftOf="@+id/btn_record_play"
-        	        android:layout_toRightOf="@+id/tv_record"/>
+        	        android:layout_below="@+id/tv_record"/>
         	    <ImageButton
         	        android:id="@+id/btn_record_play"
         	        android:src="@drawable/record_play"
@@ -180,20 +195,19 @@
         	        android:layout_height="48dp"
         	        android:layout_marginRight="5dp"
         	        android:layout_alignParentRight="true"
-        	        android:contentDescription="@string/record"/>
+        	        android:contentDescription="@string/record"
+        	        android:layout_below="@+id/tv_record"/>
        		</RelativeLayout>
        		<RelativeLayout
         	    android:layout_width="fill_parent"
-        		android:layout_height="wrap_content"
-        		android:layout_marginBottom="15dp">
+        		android:layout_height="wrap_content">
         	    <TextView 
         	        android:id="@+id/tv_photo"
         	        android:layout_height="wrap_content"
         	        android:layout_width="80dp"        	        
         	        android:layout_marginLeft="5dp"
         	        android:layout_marginRight="5dp"
-        	        android:layout_marginTop="10dp"
-        	        android:textSize="15sp"
+        	        android:textSize="12sp"
         	        android:textStyle="bold"
         	        android:text="@+string/photo"
         	        android:layout_alignParentLeft="true"/>
@@ -202,8 +216,8 @@
         	        android:id="@+id/iv_photo"
         	        android:layout_width="128dp"
         	        android:layout_marginRight="5dp"
-        	        android:layout_toRightOf="@+id/tv_photo"
-        	        android:layout_toLeftOf="@+id/btn_gallery"
+        	        android:layout_below="@+id/tv_photo"
+        	        android:layout_alignParentLeft="true"
         	        android:src="@drawable/no_event_photo"
         	        android:contentDescription="@string/photo"
         	        android:clickable="true"/>
@@ -213,7 +227,8 @@
         	        android:layout_width="48dp"
         	        android:layout_height="48dp"
         	        android:layout_marginRight="5dp"
-        	        android:layout_toLeftOf="@+id/btn_camera"
+        	        android:layout_alignParentRight="true"
+        	        android:layout_below="@+id/tv_photo"
 	       	        android:contentDescription="@string/photo"/> 
         	    <ImageButton
         	        android:id="@+id/btn_camera"
@@ -222,6 +237,7 @@
         	        android:layout_height="48dp"
         	        android:layout_marginRight="5dp"
         	        android:layout_alignParentRight="true"
+        	        android:layout_below="@+id/btn_gallery"
         	        android:contentDescription="@string/photo"/>
        		</RelativeLayout>
        </LinearLayout>

@@ -81,9 +81,11 @@ public class NewEventActivity extends Activity{
     private File tempRecordFile = new File(eventRecordPath, getRecordFileName());
 	private Uri photoUri;
 	private TextView dateTextView;
-	private EditText etEventName,etDescription,etLocationName;
+	private EditText etEventName,etDescription;
+//	private EditText etLocationName;
 	private Button btnFromDate,btnToDate,btnFromTime,btnToTime;
-	private ImageButton imgBtnLocation,imgBtnRecordPlay,imgBtnGallery,imgBtnPhoto;
+	private ImageButton imgBtnRecordPlay,imgBtnGallery,imgBtnPhoto;
+//	private ImageButton imgBtnLocation;
 	private RecordButton imgBtnRecord = null;
 	private ImageView imgView;
 	private MediaPlayer mediaPlayer = new MediaPlayer();;
@@ -130,8 +132,8 @@ public class NewEventActivity extends Activity{
 			for(int i = 0; i < jsonArray.length(); i++){
 				JSONObject jsonObject = jsonArray.getJSONObject(i);
 				GroupInfo group = new GroupInfo();
-				group.setId(jsonObject.getString("id"));
-				group.setName(jsonObject.getString("name"));
+				group.setId(jsonObject.getString("_id"));
+				group.setName(jsonObject.getString("groupName"));
 				groupList.add(group);
 			}
 			
@@ -142,7 +144,7 @@ public class NewEventActivity extends Activity{
 		eventInfo.setUserId(userId);
 		etEventName = (EditText)findViewById(R.id.et_event_name);
 		etDescription= (EditText)findViewById(R.id.et_description);
-		etLocationName = (EditText)findViewById(R.id.et_location);
+//		etLocationName = (EditText)findViewById(R.id.et_location);
 		if(!eventInfo.CalIsSet()){
 			if(gainMinute > 29)
 			{
@@ -177,8 +179,10 @@ public class NewEventActivity extends Activity{
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);          
         groupSpinner.setAdapter(spinnerAdapter);
         for(int i = 0; i < groupList.size(); i++){
-			if(groupNameList.get(i).contentEquals("default")){
-				groupSpinner.setSelection(i);}
+			if(groupNameList.get(i).contentEquals("All friends")){
+				groupSpinner.setSelection(i);
+				eventInfo.setTargetGroup(groupList.get(i).getId());
+				}
 			
 		} 
         groupSpinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){      
@@ -484,7 +488,7 @@ public class NewEventActivity extends Activity{
 				// TODO Auto-generated method stub
 				eventInfo.setEventName(etEventName.getText().toString());
 				eventInfo.setDescription(etDescription.getText().toString());
-				eventInfo.setLocationName(etLocationName.getText().toString());
+//				eventInfo.setLocationName(etLocationName.getText().toString());
 				if(eventInfo.getEventName().isEmpty()){
 					Toast noEventName = Toast.makeText(NewEventActivity.this,
 						     "Please input event name", Toast.LENGTH_LONG);
@@ -492,15 +496,17 @@ public class NewEventActivity extends Activity{
 					noEventName.show();
 				}else if(eventInfo.getDescription().isEmpty()){
 					eventInfo.setDescription(eventInfo.getEventName());
-				}else if(eventInfo.getLocationName().isEmpty()){
-					Toast noLocationName = Toast.makeText(NewEventActivity.this,
-						     "Please input the location name", Toast.LENGTH_LONG);
-					noLocationName.setGravity(Gravity.CENTER, 0, 0);
-					noLocationName.show();
+//				}else if(eventInfo.getLocationName().isEmpty()){
+//					Toast noLocationName = Toast.makeText(NewEventActivity.this,
+//						     "Please input the location name", Toast.LENGTH_LONG);
+//					noLocationName.setGravity(Gravity.CENTER, 0, 0);
+//					noLocationName.show();
 				}else{
 					
 					//------------Remember to Modify------------
+					eventInfo.setLocationName(eventInfo.getLocationName());
 					eventInfo.setLocationCoordinate(eventInfo.getLocationName());
+					
 					//------------Remember to Modify------------
 					
 					calFrom.set(Calendar.SECOND, 0);
@@ -553,6 +559,9 @@ public class NewEventActivity extends Activity{
 					}
 					
 					MultipartEntity multipartEntity  = new MultipartEntity( );
+					ContentBody cbMessage = 
+				    		new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); 
+				    multipartEntity.addPart("jsonString", cbMessage);
 					if(!params[9].isEmpty()){
 						ContentBody imageFile;
 						imageFile = new FileBody(tempImageFile);
@@ -563,9 +572,6 @@ public class NewEventActivity extends Activity{
 						recordFile = new FileBody(tempRecordFile);
 						multipartEntity.addPart("recordFile", recordFile);
 					}
-				    ContentBody cbMessage = 
-				    		new StringBody(jsonEntity.toString(),Charset.forName("UTF-8")); ;
-				    multipartEntity.addPart("jsonString", cbMessage);
 				    httpPost.setEntity(multipartEntity);
 				    HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;
@@ -647,6 +653,7 @@ public class NewEventActivity extends Activity{
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			progressDialog.cancel();
+			System.out.println("result--------->"+result);
 			switch(result){
 			case Primitive.CONNECTIONREFUSED:
 				Toast connectError = Toast.makeText(NewEventActivity.this,
@@ -827,7 +834,6 @@ public class NewEventActivity extends Activity{
 			int resultCode;
 			try {
 				resultCode = result.getInt("result");
-				
 				switch(resultCode){
 				case Primitive.CONNECTIONREFUSED:
 					Toast connectError = Toast.makeText(NewEventActivity.this,
