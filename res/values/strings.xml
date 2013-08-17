@@ -49,9 +49,11 @@
     <string name="new_group">New group</string>
     <string name="title_activity_new_group">NewGroup</string>
     <string name="new_group_name">Input group name</string>
-    <string name="new_group_ok">NewGPOK</string>
+    <string name="new_group_ok">OK</string>
     <string name="new_group_cancel">Cancel</string>
     <string name="new_friends">New friends</string>
     <string name="title_activity_new_friends">NewFriendsActivity</string>
 	<string name="new_group_name_title">New name</string>
+	<string name="new_friends_cancel">Cancel</string>
+	<string name="new_friends_ok">OK</string>
 </resources>

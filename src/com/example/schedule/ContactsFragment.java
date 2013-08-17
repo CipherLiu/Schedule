@@ -1,10 +1,18 @@
 package com.example.schedule;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +46,10 @@ public class ContactsFragment extends Fragment{
 	private ArrayList<GroupInfo> groupList = new ArrayList();
 	private List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
     private ProgressDialog progressDialog;
+    private String paraToNewFriendsActivity;
+    private String paraToNewGroupActivity;
+    private static String stranger_check_url = Global.BASICURL+"StrangerCheck";
+    private static String friends_check_url = Global.BASICURL+"FriendsCheck";
      /*
       * Getting group data here
       * format goes with {title,info,img}
@@ -76,10 +88,7 @@ public class ContactsFragment extends Fragment{
 		newFriends.setOnClickListener(new Button.OnClickListener(){
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent=new Intent();
-            	intent.setClass(ContactsFragment.this.getActivity(),NewFriendsActivity.class );
-            	intent.putExtra("userIdToAddNewFriends", userId);
-            	ContactsFragment.this.startActivityForResult(intent, 11);
+				new NewFriendsAT().execute(userId);
 			}
 			
 		});
@@ -94,17 +103,112 @@ public class ContactsFragment extends Fragment{
 		@Override
 		protected Integer doInBackground(String... params) {
 			// TODO Auto-generated method stub
-			return 1;
+			if(!params[0].isEmpty()){
+				try{
+					HttpClient httpClient = new DefaultHttpClient();
+					//Compose a http get url
+					String query = URLEncoder.encode("userId", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[0], "utf-8");
+					String urlParams = "?"+query;
+					HttpGet httpget = new HttpGet(friends_check_url+urlParams);
+					//http response
+					HttpResponse httpResponse = httpClient.execute(httpget);
+					int result;
+					if(httpResponse.getStatusLine().getStatusCode() == 200){
+						paraToNewGroupActivity = EntityUtils.toString(httpResponse.getEntity()); 
+						JSONObject resultJSON = new JSONObject(paraToNewFriendsActivity);
+						result = resultJSON.getInt("result");
+					}else{
+						return Primitive.CONNECTIONREFUSED;
+					}
+					if (httpClient != null) {
+						httpClient.getConnectionManager().shutdown();
+					}
+					return result;
+				}catch(HttpHostConnectException e){
+					e.printStackTrace();
+					return Primitive.CONNECTIONREFUSED;
+				}catch (Exception e) {
+					e.printStackTrace();
+					return -1;
+				}
+		}else{
+			return -1;
+		}
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			/*
+			 * Go to NewGroupActivity and pass the params
+			 */
 			Intent intent=new Intent();
         	intent.setClass(ContactsFragment.this.getActivity(),NewGroupActivity.class );
         	intent.putExtra("userIdToCreateGp", userId);
+        	intent.putExtra("userIdToSelectInGroup", paraToNewGroupActivity);
 			ContactsFragment.this.startActivityForResult(intent, 10);
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+		}
+	}
+	class NewFriendsAT extends AsyncTask<String,Integer,Integer>{
+
+		@Override
+		protected Integer doInBackground(String... params) {
+			// TODO Auto-generated method stub
+				if(!params[0].isEmpty()){
+					
+					try{
+						HttpClient httpClient = new DefaultHttpClient();
+						String query = URLEncoder.encode("userId", "utf-8");
+						query += "=";
+						query += URLEncoder.encode(params[0], "utf-8");
+						String urlParams = "?"+query;
+						HttpGet httpget = new HttpGet(stranger_check_url+urlParams);
+						HttpResponse httpResponse = httpClient.execute(httpget);
+						int result;
+						if(httpResponse.getStatusLine().getStatusCode() == 200){
+							paraToNewFriendsActivity = EntityUtils.toString(httpResponse.getEntity()); 
+							JSONObject resultJSON = new JSONObject(paraToNewFriendsActivity);
+							result = resultJSON.getInt("result");
+						}else{
+							return Primitive.CONNECTIONREFUSED;
+						}
+						if (httpClient != null) {
+							httpClient.getConnectionManager().shutdown();
+						}
+						return result;
+					}catch(HttpHostConnectException e){
+						e.printStackTrace();
+						return Primitive.CONNECTIONREFUSED;
+					}catch (Exception e) {
+						e.printStackTrace();
+						return -1;
+					}
+			}else{
+				return -1;
+			}
+			
+		}
+
+		@Override
+		protected void onPostExecute(Integer result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			/*
+			 * Go to NewFriendsActivity and pass the params
+			 */
+			Intent intent=new Intent();
+        	intent.setClass(ContactsFragment.this.getActivity(),NewFriendsActivity.class );
+        	intent.putExtra("userIdToAddNewFriends", userId);
+        	intent.putExtra("userIdNewlyReg", paraToNewFriendsActivity);
+        	ContactsFragment.this.startActivityForResult(intent, 11);
 		}
 
 		@Override

@@ -9,17 +9,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import android.app.ProgressDialog;
+
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.example.schedule.NewEventActivity.OneDayEventQueryAT;
@@ -65,8 +70,10 @@ public class NewGroupActivity extends Activity {
     private ArrayList<UserInfo> friends = new ArrayList();
     private ArrayList<String> members = new ArrayList();
     private EditText et_newGroupName;
-    //Number of selected
-    private int checkNum;
+    private String userId;
+    private static String url = Global.BASICURL+"GroupCreate";
+    private String httpRespond;
+    private String newGroupName;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -74,40 +81,62 @@ public class NewGroupActivity extends Activity {
         lv_new_gp = (ListView) findViewById(R.id.lv_new_group);
         mAdapter = new GroupItemAdapter(this, lv_new_gp);
         et_newGroupName = (EditText) findViewById(R.id.et_new_group_name);
+        
+        userId = getIntent().getStringExtra("userIdToCreateGp");
+    	
         /*
          * Parse data here
          */
-        UserInfo user = new UserInfo();
-        user.setUsername("erbi");
-        user.setImage("null");
-        user.setUserId("daerbi");
-        friends.add(user); 
-        
-        for(int i=0 ; i < friends.size();i++){
-        	mAdapter.addUser(friends.get(i));
+        if(!getIntent().getStringExtra("userIdToSelectInGroup").isEmpty()){
+	        try {
+	        	/*
+	        	 * Load JSON string from intent,
+	        	 * parse the JSONArray to fill the UserInfo,
+	        	 * after these,do add
+	        	 */
+					JSONObject resultJSON = new JSONObject(getIntent().getStringExtra("userIdToSelectInGroup"));
+					JSONObject retrieveArray = new JSONObject();
+					JSONArray resultJSONArray = new JSONArray();
+					resultJSONArray = resultJSON.getJSONArray("friendsArray");
+					for(int i=0 ; i< resultJSONArray.length();i++){
+						UserInfo user = new UserInfo();
+						retrieveArray = (JSONObject) resultJSONArray.get(i);
+						
+						user.setUsername(retrieveArray.getString("friendName"));												
+						user.setImage(retrieveArray.getString("friendImage"));
+				        user.setUserId(retrieveArray.getString("friendId"));
+				        friends.add(user); 
+					}
+				} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				}
+	        for(int i=0 ; i < friends.size();i++){
+	        	mAdapter.addUser(friends.get(i));
+	        }
+	        lv_new_gp.setAdapter(mAdapter);
+	        lv_new_gp.setOnItemClickListener(new OnItemClickListener() {
+	
+	            @Override
+	            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+	                    long arg3) {
+	            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_gp_is_add);
+	            	//CheckBox toggle
+	            	cb.toggle();
+	            	if(cb.isChecked()){
+	            		members.add(friends.get(arg2).getUserId());
+	            	}else{
+	            		
+	            		for(int i = 0; i<members.size(); i++){
+	            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
+	            				members.remove(i);
+	            			}
+	            		}
+	            	}
+	                
+	            }
+	        });
         }
-        lv_new_gp.setAdapter(mAdapter);
-        lv_new_gp.setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                    long arg3) {
-            	CheckBox cb = (CheckBox)arg0.findViewById(R.id.cb_new_gp_is_add);
-            	
-            	cb.toggle();
-            	if(cb.isChecked()){
-            		members.add(friends.get(arg2).getUserId());
-            	}else{
-            		
-            		for(int i = 0; i<members.size(); i++){
-            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
-            				members.remove(i);
-            			}
-            		}
-            	}
-                
-            }
-        });
     }
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -120,11 +149,34 @@ public class NewGroupActivity extends Activity {
 
 			public boolean onMenuItemClick(MenuItem item) {
 				// TODO Auto-generated method stub
-				Intent data=new Intent();  
-	            data.putExtra("newCreateGroupId", "Test ID");
-	            data.putExtra("newCreateGroupName", "New Added Group");
-	            setResult(1, data);   
-	            finish(); 
+				newGroupName = et_newGroupName.getText().toString();
+				/*
+				 * construct the request string,as JSON format
+				 */
+				if(!newGroupName.isEmpty()){
+					JSONObject sendObject = new JSONObject();
+					try {
+						
+						JSONArray friends = new JSONArray();
+						for(int i=0 ; i < members.size() ; i++){
+							friends.put(members.get(i));
+							sendObject.put("friends", friends);
+						}
+						sendObject.put("userId", userId);
+						sendObject.put("groupName", newGroupName);
+						
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//System.out.println("In New group at,send string is:"+sendObject.toString());
+					new AddGroupRequestAT().execute(sendObject.toString());
+				}else{
+					Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
+						     "Input new group name", Toast.LENGTH_LONG);
+					inputInvalid.setGravity(Gravity.CENTER, 0, 0);
+					inputInvalid.show();
+				}
 				return true;
 			}
 	    	
@@ -140,6 +192,84 @@ public class NewGroupActivity extends Activity {
 	    	
 	    });
 	    return true;
+	}
+	
+	class AddGroupRequestAT extends AsyncTask<String,Integer,Integer>{
+
+		@Override
+		protected Integer doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			if(!params[0].isEmpty()){
+				try {
+					/*
+					 * construct a http post request
+					 */
+					HttpPost httpPost = new HttpPost(url);
+					HttpClient httpClient = new DefaultHttpClient();
+					HttpEntity hEntity;
+					
+					hEntity = new StringEntity(params[0],"utf-8");
+					//System.out.println("Test sending string(in new group async task):"+params[0]);
+					httpPost.setEntity(hEntity);
+					HttpResponse httpResponse = httpClient.execute(httpPost);
+					int result;
+					if(httpResponse.getStatusLine().getStatusCode() == 200){
+						httpRespond = EntityUtils.toString(httpResponse.getEntity()); 
+						JSONObject resultJSON = new JSONObject(httpRespond);
+						result = resultJSON.getInt("result");
+					}else{
+						return Primitive.CONNECTIONREFUSED;
+					}
+					if (httpClient != null) {
+						httpClient.getConnectionManager().shutdown();
+					}
+					return result;
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return -1;
+				}
+			}else{
+				return -1;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Integer result) {
+			// TODO Auto-generated method stub
+			switch(result){
+			case Primitive.CONNECTIONREFUSED:
+				Toast connectError = Toast.makeText(NewGroupActivity.this,
+					     "Cannot connect to the server", Toast.LENGTH_LONG);
+				connectError.setGravity(Gravity.CENTER, 0, 0);
+				connectError.show();
+				break;
+			case Primitive.ACCEPT:
+				Intent data=new Intent();  
+				try {
+					JSONObject resultJSON = new JSONObject(httpRespond);
+					/*
+					 * Use as a return value to fragment to refresh the listview
+					 */
+					data.putExtra("newCreateGroupId", resultJSON.getString("groupId"));
+		            data.putExtra("newCreateGroupName", newGroupName);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	            setResult(1, data);   
+	            finish(); 
+				break;
+			default:
+				 
+				break;
+			}
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+		}
 	}
     private void dataChanged() {
         // Notify listView
@@ -209,14 +339,15 @@ public class NewGroupActivity extends Activity {
             CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
             		R.id.cb_new_gp_is_add);
             tvUserName.setText(user.getUsername());  
-            if(user.getImage().contentEquals("null")){
+            if(!user.getImage().contentEquals("null")){
             	ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
             	syncImageLoader.loadImage(position,
-            			"http://192.168.1.103/userimg/UserImage_20130614_110059.jpg",  
+            			Global.USERIMGURL+user.getImage(),  
                         imageLoadListener, user.getImage()); 
-            	//syncImageLoader.loadImage(position, eventImageUrl + event.getPhoto(),  
-                //        imageLoadListener, event.getPhoto()); 
-            	} 
+            	}else
+            	{
+            		ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
+            	}
              
             return convertView;  
         }  
