@@ -6,12 +6,20 @@ public class UserInfo {
 	private String username;
 	private String password;
 	private String image;
+	private String userId;
 	public UserInfo() {
 		// TODO Auto-generated constructor stub
 		this.email = null;
 		this.password = null;
 		this.username = null;
 		this.image = null;
+		this.userId = null;
+	}
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 	public String getEmail() {
 		return email;

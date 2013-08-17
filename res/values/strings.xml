@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">Schedule</string>
@@ -7,8 +8,8 @@
     <string name="password">Password</string>
     <string name="password_confirm">Password ConFirm</string>
     <string name="user_image_description">User image to upload</string>
-	<string name="title_section4">settings</string>
-	<string name="title_section3">contacts</string>
+    <string name="title_section4">settings</string>
+    <string name="title_section3">contacts</string>
     <string name="title_section2">social</string>
     <string name="title_section1">me</string>
     <string name="hello_world">Hello world!</string>
@@ -28,22 +29,29 @@
     <string name="event_location">Event Location</string>
     <string name="record">Record</string>
     <string name="photo">Photo</string>
-	<string name="description">Description</string>
-	<string name="event_description">Event Description</string>
-	<string name="title_activity_date">Date</string>
-	<string name="take_photo">Take Photo</string>
-	<string name="choose_existing">Choose Existing</string>
-	<string name="user_image">User Image</string>
-	<string name="short_time">Recording time is too short</string>
-	<string name="recording">Keep pressing to record</string>
-	<string name="long_time">Recoring is too long</string>
-	<string name="cancal_record">Recording cancel </string>
-	<string name="reg_ok">RegOk</string>
-	<string name="reg_cancel">RegCancel</string>
-	<string name="guide_go">Welcome</string>
-	<string name="title_activity_welcome">WelcomeActivity</string>
-	<string name="title_activity_guide">GuideActivity</string>
-	<string name="action_settings">Settings</string>
-	<string name="title_activity_event_detail">EventDetailActivity</string>
-	<string name="new_group">New group</string>
+    <string name="description">Description</string>
+    <string name="event_description">Event Description</string>
+    <string name="title_activity_date">Date</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_existing">Choose Existing</string>
+    <string name="user_image">User Image</string>
+    <string name="short_time">Recording time is too short</string>
+    <string name="recording">Keep pressing to record</string>
+    <string name="long_time">Recoring is too long</string>
+    <string name="cancal_record">Recording cancel </string>
+    <string name="reg_ok">RegOk</string>
+    <string name="reg_cancel">RegCancel</string>
+    <string name="guide_go">Welcome</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_guide">GuideActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_event_detail">EventDetailActivity</string>
+    <string name="new_group">New group</string>
+    <string name="title_activity_new_group">NewGroup</string>
+    <string name="new_group_name">Input group name</string>
+    <string name="new_group_ok">NewGPOK</string>
+    <string name="new_group_cancel">Cancel</string>
+    <string name="new_friends">New friends</string>
+    <string name="title_activity_new_friends">NewFriendsActivity</string>
+	<string name="new_group_name_title">New name</string>
 </resources>
