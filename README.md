@@ -1,5 +1,5 @@
 # Social Calendar #
-All rights reserved!**Cipher Liu**,**Layone** and **Axiaolei** 2013!
+All rights reserved! **Cipher Liu** , **Layone** and **Axiaolei** 2013!
 #Project deadline
 2013-08-24
 
