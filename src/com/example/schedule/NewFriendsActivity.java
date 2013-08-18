@@ -170,7 +170,7 @@ public class NewFriendsActivity extends Activity {
 					HttpEntity hEntity;
 					
 					hEntity = new StringEntity(params[0],"utf-8");
-					System.out.println("Test send string:"+params[0]);
+					//System.out.println("Test send string:"+params[0]);
 					httpPost.setEntity(hEntity);
 					HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;
@@ -293,8 +293,6 @@ public class NewFriendsActivity extends Activity {
             	syncImageLoader.loadImage(position,
             			Global.USERIMGURL+user.getImage(),  
                         imageLoadListener, user.getImage()); 
-            	//syncImageLoader.loadImage(position, eventImageUrl + event.getPhoto(),  
-                //        imageLoadListener, event.getPhoto()); 
             	} else{
             		ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
             	}

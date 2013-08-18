@@ -74,6 +74,7 @@ public class NewGroupActivity extends Activity {
     private static String url = Global.BASICURL+"GroupCreate";
     private String httpRespond;
     private String newGroupName;
+    private String existGroupList;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -83,6 +84,7 @@ public class NewGroupActivity extends Activity {
         et_newGroupName = (EditText) findViewById(R.id.et_new_group_name);
         
         userId = getIntent().getStringExtra("userIdToCreateGp");
+        existGroupList = getIntent().getStringExtra("existGroupList");
     	
         /*
          * Parse data here
@@ -150,32 +152,57 @@ public class NewGroupActivity extends Activity {
 			public boolean onMenuItemClick(MenuItem item) {
 				// TODO Auto-generated method stub
 				newGroupName = et_newGroupName.getText().toString();
+				boolean canCreateNewGroup = true;
 				/*
 				 * construct the request string,as JSON format
 				 */
-				if(!newGroupName.isEmpty()){
-					JSONObject sendObject = new JSONObject();
-					try {
-						
-						JSONArray friends = new JSONArray();
-						for(int i=0 ; i < members.size() ; i++){
-							friends.put(members.get(i));
-							sendObject.put("friends", friends);
+				try {
+					JSONArray parseExistGroupList = new JSONArray(existGroupList);
+					JSONObject parseExistGroupItem = new JSONObject();
+					for(int i=0 ; i < parseExistGroupList.length() ; i++){
+						parseExistGroupItem = (JSONObject) parseExistGroupList.get(i);
+						if(newGroupName.equals(parseExistGroupItem.getString("groupName"))){
+							canCreateNewGroup = false;
 						}
-						sendObject.put("userId", userId);
-						sendObject.put("groupName", newGroupName);
-						
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
-					//System.out.println("In New group at,send string is:"+sendObject.toString());
-					new AddGroupRequestAT().execute(sendObject.toString());
-				}else{
+					
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if(canCreateNewGroup)
+				{
+					if(!newGroupName.isEmpty()){
+						JSONObject sendObject = new JSONObject();
+						try {
+							
+							JSONArray friends = new JSONArray();
+							for(int i=0 ; i < members.size() ; i++){
+								friends.put(members.get(i));
+								sendObject.put("friends", friends);
+							}
+							sendObject.put("userId", userId);
+							sendObject.put("groupName", newGroupName);
+							
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						//System.out.println("In New group at,send string is:"+sendObject.toString());
+						new AddGroupRequestAT().execute(sendObject.toString());
+					}else{
+						Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
+							     "Input new group name", Toast.LENGTH_LONG);
+						inputInvalid.setGravity(Gravity.CENTER, 0, 0);
+						inputInvalid.show();
+					}
+				}
+				else{
 					Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
-						     "Input new group name", Toast.LENGTH_LONG);
+						     "Group already existed!", Toast.LENGTH_LONG);
 					inputInvalid.setGravity(Gravity.CENTER, 0, 0);
 					inputInvalid.show();
+					et_newGroupName.setText("");
 				}
 				return true;
 			}
