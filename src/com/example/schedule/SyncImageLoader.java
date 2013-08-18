@@ -28,7 +28,8 @@ public class SyncImageLoader {
 	
 	final Handler handler = new Handler();
 	
-	private HashMap<String, SoftReference<Drawable>> imageCache = new HashMap<String, SoftReference<Drawable>>();   
+	private HashMap<String, SoftReference<Drawable>> imageCache 
+		= new HashMap<String, SoftReference<Drawable>>();   
 	
 	public interface OnImageLoadListener {
 		public void onImageLoad(Integer t, Drawable drawable);
@@ -93,7 +94,8 @@ public class SyncImageLoader {
 		}).start();
 	}
 	
-	private void loadImage(final String mImageUrl,final Integer mt,final OnImageLoadListener mListener,final String fileName){
+	private void loadImage(final String mImageUrl,final Integer mt,
+			final OnImageLoadListener mListener,final String fileName){
 		
 		if (imageCache.containsKey(mImageUrl)) {  
 			System.out.println("drawable");
@@ -136,7 +138,7 @@ public class SyncImageLoader {
 		//是否SD卡可用
 		if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
 			//检查是或有保存图片的文件夹，没有就创建一个
-			String FileUrl = Environment.getExternalStorageDirectory()+"/Schedule/Images";
+			String FileUrl = Environment.getExternalStorageDirectory()+"/Schedule/Images/";
 			File folder = new File(FileUrl);
 			if(!folder.exists()){
 				folder.mkdir();

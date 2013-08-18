@@ -1,15 +1,21 @@
 package com.example.schedule;
 
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import org.apache.http.HttpResponse;
@@ -22,6 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -46,10 +54,10 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,6 +72,7 @@ public class DateActivity extends Activity {
 	private String userId;
 	private ProgressDialog progressDialog;
 	private String groupListString;
+	
 	public DateActivity(){
 		
 	}
@@ -233,6 +242,7 @@ public class DateActivity extends Activity {
 		}
 		return null;
 	}
+	@SuppressLint("SimpleDateFormat")
 	private String dateFormat(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
         		"yyyy.MM.dd HH:mm");
@@ -420,7 +430,7 @@ public class DateActivity extends Activity {
                 convertView = mInflater.inflate(R.layout.list_item_date,  
                         null);  
             }  
-            EventInfo event = mEvents.get(position);  
+            final EventInfo event = mEvents.get(position);  
             convertView.setTag(position);  
             ImageView ivEventPhoto = (ImageView) convertView.findViewById(
             		R.id.iv_date_list_item_event_photo);
@@ -434,6 +444,25 @@ public class DateActivity extends Activity {
             		R.id.tv_date_list_item_event_content); 
             ImageButton iBtnRecordPaly = (ImageButton)convertView.findViewById(
             		R.id.btn_date_list_item_event_record_play);
+            Button commentsButton = (Button)convertView.findViewById(
+            		R.id.btn_date_list_item_event_comment);
+            commentsButton.setOnClickListener(new OnClickListener(){
+
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					Intent toEventActivity = new Intent();
+					toEventActivity.putExtra("eventId", event.getEventId());
+					toEventActivity.putExtra("calFrom", event.getCalFrom().getTimeInMillis());
+					toEventActivity.putExtra("calTo", event.getCalTo().getTimeInMillis());
+					toEventActivity.putExtra("eventName", event.getEventName());
+					toEventActivity.putExtra("eventContent", event.getDescription());
+					toEventActivity.putExtra("photo", event.getPhoto());
+					toEventActivity.putExtra("record", event.getRecord());
+					toEventActivity.setClass(DateActivity.this, EventActivity.class);
+					DateActivity.this.startActivity(toEventActivity);
+				}
+            	
+            });
             if(!event.getRecord().contentEquals("null")){
             	iBtnRecordPaly.setVisibility(View.VISIBLE);
             	RecordPlayClickListener listener = new RecordPlayClickListener(event.getRecord());
@@ -521,6 +550,7 @@ public class DateActivity extends Activity {
 		private int pausePosition;
 		private File eventRecordPath;
 		private File tempRecordFile;
+		private MediaPlayer mediaPlayer = new MediaPlayer();
 		RecordPlayClickListener(String fileName){
 			this.fileName = fileName;
 			this.eventRecordPath = new File(Environment.getExternalStorageDirectory().getPath()+
@@ -535,11 +565,165 @@ public class DateActivity extends Activity {
 		       } 
 			this.tempRecordFile = new File(eventRecordPath, fileName);
 		}
-		public void onClick(View v) {
-    		
+		
+		public class DownloadHelper {
+			private URL url = null;			
+			public String download(String newUrl){
+				StringBuffer sb = new StringBuffer();
+				String line = null;
+				BufferedReader br = null;				
+				//创建一个url对象；
+				try {
+					url = new URL(newUrl);
+					//创建一个http连接
+					HttpURLConnection urlConn  = (HttpURLConnection)url.openConnection();
+					br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+					while((line = br.readLine())!=null){
+						sb.append(line);
+						System.out.println(sb.toString());
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally{
+					try{
+						br.close();
+					}catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				return sb.toString();
+			}			
+			//返回-1下载文件出错，返回0下载成功，返回1文件已经存在
+			public int downFile(String urlStr,String path,String fileName){
+				try {
+					InputStream is = null;
+					FileUtils fileUtils = new FileUtils();
+					if(fileUtils.existSDFile(path+fileName)){
+						return 1;
+					}else{
+						//inputStream = 上个从网络上获得的输入流
+						is = getInputStreamFromUrl(urlStr);
+						File resultFile = fileUtils.write2SDCARDFromInputSteam(path, fileName, is);
+						if(resultFile==null)return -1;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return 0;
+			}			
+			public InputStream getInputStreamFromUrl(String newUrl){
+				URL url = null;
+				HttpURLConnection httpURLConnection = null;
+				InputStream is = null;
+				try {
+					url = new URL(newUrl);
+					httpURLConnection = (HttpURLConnection)url.openConnection();
+					is = httpURLConnection.getInputStream();
+					
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return is;
+			}
+		}
+		
+		public class FileUtils {
+			private String SDCARD = null;
+			public FileUtils() {
+				SDCARD = Environment.getExternalStorageDirectory() + "/";
+			}
+			// 创建一个目录
+			public File createSDDir(String dirName) {
+				File fileDir = new File(SDCARD + dirName);
+				fileDir.mkdir();
+				return fileDir;
+			}
+			// 创建一个文件；
+			public File createSDFile(String fileName) throws IOException {
+				File file = new File(SDCARD+fileName);   //注意在这里一定要加上主目录 SDCARD中，才可以，不然会找不到目录 。
+				file.createNewFile();
+				return file;
+			}
+			// 判断SD卡上的文件是不是存在；
+			public boolean existSDFile(String fileName) {
+				File file = new File(SDCARD + fileName);
+				return file.exists();
+			}
+			// 将一个流对象写入SDCARD
+			public File write2SDCARDFromInputSteam(String path, String fileName,
+					InputStream is) {
+				File file = null;
+				OutputStream os = null;
+				try {
+					createSDDir(path);
+					file = createSDFile(path + fileName);
+					os = new FileOutputStream(file);
+					byte[] buffer = new byte[4 * 1024];
+					while (is.read(buffer) != -1) {
+						os.write(buffer);
+					}
+					os.flush();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						os.close();
+						is.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				return file;
+			}
+		}
+		
+		public void onClick(View v) { 		
 			// TODO Auto-generated method stub
-    		imgBtnRecordPlay = (ImageButton)v;
-    		MediaPlayer mediaPlayer = new MediaPlayer();
+			imgBtnRecordPlay = (ImageButton)v;
+    		String recordURL = Global.EVENTRECORDURL + fileName;
+    		File recordFile =new File(recordURL);
+    		if(recordFile.exists()){
+    			recordPlay();
+    		}else{
+    			new GetRecordAT().execute(recordURL);
+    		}
+		}
+		class GetRecordAT extends AsyncTask<String,Integer,Integer>{
+			 
+			@Override
+			protected void onPreExecute() {
+			}
+			
+			@Override
+			protected Integer doInBackground(String... params) {
+				// TODO Auto-generated method stub
+				DownloadHelper downloadHelper = new DownloadHelper();
+				System.out.println(Global.EVENTRECORDURL+fileName);
+				return downloadHelper.downFile(Global.EVENTRECORDURL+fileName, 
+						"Schedule/tempEventRecord/",fileName);
+			}
+
+			@Override
+			protected void onPostExecute(Integer result) {
+				// TODO Auto-generated method stub
+				super.onPostExecute(result);
+				if(result == -1){
+					Toast Error = Toast.makeText(DateActivity.this,
+						     "Error occured when get the record", Toast.LENGTH_LONG);
+		    	  Error.setGravity(Gravity.CENTER, 0, 0);
+		    	  Error.show();
+				}else if(result == 0 || result == 1){
+					recordPlay();
+				}
+				
+			}
+		}
+		private void recordPlay(){
+			
     		if(mediaPlayer.isPlaying()){
 				mediaPlayer.pause();
 				pausePosition = mediaPlayer.getCurrentPosition();
@@ -583,6 +767,5 @@ public class DateActivity extends Activity {
 				imgBtnRecordPlay.setImageResource(R.drawable.pause);
 			}
 		}
-		
 	}
 }

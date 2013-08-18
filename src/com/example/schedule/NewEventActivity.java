@@ -653,7 +653,6 @@ public class NewEventActivity extends Activity{
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			progressDialog.cancel();
-			System.out.println("result--------->"+result);
 			switch(result){
 			case Primitive.CONNECTIONREFUSED:
 				Toast connectError = Toast.makeText(NewEventActivity.this,

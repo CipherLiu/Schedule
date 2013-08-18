@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -305,7 +306,19 @@ public class RegisterActivity extends Activity {
 					}
 					return result;
 				}else{
-					String urlParams = "?email="+params[0]+"&password="+params[1]+"&username="+params[2];
+					//String urlParams = "?email="+params[0]+"&password="+params[1]+"&username="+params[2];
+					String query = URLEncoder.encode("email", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[0], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("password", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[1], "utf-8");
+					query += "&";
+					query += URLEncoder.encode("username", "utf-8");
+					query += "=";
+					query += URLEncoder.encode(params[2], "utf-8");				
+					String urlParams = "?"+query;
 					HttpGet httpget = new HttpGet(url+urlParams);
 					HttpResponse httpResponse = httpClient.execute(httpget);
 					int result;
