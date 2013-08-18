@@ -3,6 +3,7 @@ package com.example.schedule;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class ContactsFragment extends Fragment{
 					HttpResponse httpResponse = httpClient.execute(httpget);
 					int result;
 					if(httpResponse.getStatusLine().getStatusCode() == 200){
-						paraToNewGroupActivity = EntityUtils.toString(httpResponse.getEntity()); 
+						paraToNewGroupActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
 						JSONObject resultJSON = new JSONObject(paraToNewFriendsActivity);
 						result = resultJSON.getInt("result");
 					}else{
@@ -180,7 +181,7 @@ public class ContactsFragment extends Fragment{
 						HttpResponse httpResponse = httpClient.execute(httpget);
 						int result;
 						if(httpResponse.getStatusLine().getStatusCode() == 200){
-							paraToNewFriendsActivity = EntityUtils.toString(httpResponse.getEntity()); 
+							paraToNewFriendsActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
 							JSONObject resultJSON = new JSONObject(paraToNewFriendsActivity);
 							result = resultJSON.getInt("result");
 						}else{
@@ -290,6 +291,11 @@ public class ContactsFragment extends Fragment{
 					
 					try{
 						HttpClient httpClient = new DefaultHttpClient();
+						Calendar cal = Calendar.getInstance();
+						cal.set(Calendar.HOUR_OF_DAY, 0);
+						cal.set(Calendar.MINUTE, 0);
+						cal.set(Calendar.SECOND, 0);
+						cal.set(Calendar.MILLISECOND,0);
 						String query = URLEncoder.encode("userId", "utf-8");
 						query += "=";
 						query += URLEncoder.encode(params[0], "utf-8");
@@ -300,18 +306,16 @@ public class ContactsFragment extends Fragment{
 						query += "&";
 						query += URLEncoder.encode("dateTimeInMillis","utf-8");
 						query += "=";
-						query += URLEncoder.encode(String.valueOf(System.currentTimeMillis()),"utf-8");
+						query += URLEncoder.encode(String.valueOf(cal.getTimeInMillis()),"utf-8");
 						
 						String urlParams = "?"+query;
 						
 						HttpGet httpget = new HttpGet(group_social_url+urlParams);
-						
-						System.out.println("Http get url:"+group_social_url+urlParams);
+						System.out.println("Get url"+group_social_url+urlParams);
 						HttpResponse httpResponse = httpClient.execute(httpget);
 						int result;
 						if(httpResponse.getStatusLine().getStatusCode() == 200){
-							paraToEventDetailActivity = EntityUtils.toString(httpResponse.getEntity()); 
-							System.out.println("response:"+paraToEventDetailActivity);
+							paraToEventDetailActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
 							JSONObject resultJSON = new JSONObject(paraToEventDetailActivity);
 							result = resultJSON.getInt("result");
 						}else{
@@ -348,14 +352,13 @@ public class ContactsFragment extends Fragment{
 			/*
 			 * Go to EventDetailActivity and pass the params
 			 */
-			/*
 			Intent intent=new Intent();
         	intent.setClass(ContactsFragment.this.getActivity(),EventDetailActivity.class );
         	intent.putExtra("userIdToEventDetailActivity", userId);
+        	intent.putExtra("groupIdToEventDetailActivity",groupIdToEventDetailActivity);
         	intent.putExtra("groupNameToEventDetailActivity", groupNameToEventDetailActivity);
         	intent.putExtra("paraToEventDetailActivity", paraToEventDetailActivity);
         	ContactsFragment.this.startActivity(intent);
-        	*/
 				break;
 			default:
 				break;

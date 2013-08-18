@@ -78,16 +78,19 @@ public class NewGroupActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		//Activity layout
 		setContentView(R.layout.activity_new_group);
+		//ListView element
         lv_new_gp = (ListView) findViewById(R.id.lv_new_group);
         mAdapter = new GroupItemAdapter(this, lv_new_gp);
         et_newGroupName = (EditText) findViewById(R.id.et_new_group_name);
         
         userId = getIntent().getStringExtra("userIdToCreateGp");
+        //For checking if can create new group
         existGroupList = getIntent().getStringExtra("existGroupList");
     	
         /*
-         * Parse data here
+         * Parse JSON data here
          */
         if(!getIntent().getStringExtra("userIdToSelectInGroup").isEmpty()){
 	        try {
@@ -197,6 +200,9 @@ public class NewGroupActivity extends Activity {
 						inputInvalid.show();
 					}
 				}
+				/*
+				 * Group existed!
+				 */
 				else{
 					Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
 						     "Group already existed!", Toast.LENGTH_LONG);
@@ -241,7 +247,7 @@ public class NewGroupActivity extends Activity {
 					HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;
 					if(httpResponse.getStatusLine().getStatusCode() == 200){
-						httpRespond = EntityUtils.toString(httpResponse.getEntity()); 
+						httpRespond = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8"); 
 						JSONObject resultJSON = new JSONObject(httpRespond);
 						result = resultJSON.getInt("result");
 					}else{

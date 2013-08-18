@@ -58,13 +58,9 @@ public class NewFriendsActivity extends Activity {
 		setContentView(R.layout.activity_new_friends);
         lv_new_friends = (ListView) findViewById(R.id.lv_new_friends);
         mAdapter = new GroupItemAdapter(this, lv_new_friends);
-        /*
-         * Parse data here
-         */
         userId = getIntent().getStringExtra("userIdToAddNewFriends");
-        
         /*
-         * If not null,parse the json string to fill ListView
+         * If not null,parse the JSON string to fill ListView
          */
         if(!getIntent().getStringExtra("userIdNewlyReg").isEmpty()){
 	        try {
@@ -95,9 +91,8 @@ public class NewFriendsActivity extends Activity {
 	            @Override
 	            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 	                    long arg3) {
+	            	//Find touched CheckBox 
 	            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_friends_is_add);
-	            	//CheckBox cb = (CheckBox)arg0.findViewById(R.id.cb_new_friends_is_add);
-	            	
 	            	cb.toggle();
 	            	if(cb.isChecked()){
 	            		members.add(friends.get(arg2).getUserId());
@@ -175,7 +170,7 @@ public class NewFriendsActivity extends Activity {
 					HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;
 					if(httpResponse.getStatusLine().getStatusCode() == 200){
-						String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+						String retSrc = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
 						JSONObject resultJSON = new JSONObject(retSrc);
 						result = resultJSON.getInt("result");
 					}else{
@@ -206,6 +201,9 @@ public class NewFriendsActivity extends Activity {
 				connectError.show();
 				break;
 			case Primitive.ACCEPT:
+				/*
+				 * Just receive a OK flag and finish this activity
+				 */
 	            finish(); 
 				break;
 			default:

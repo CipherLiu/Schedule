@@ -5,6 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Calendar;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,58 +41,136 @@ public class DrawView extends View {
 	//Region for clip
 	//private Region region;
 	private Bitmap[] profile=new Bitmap[8];
-	//For calculating touch event area
-	private int[] eventPointOnAxisX=new int[7]; 
-	private int[] eventPointOnAxisY=new int[25]; 
-	private int profileRectLeft;
-	private int profileRectTop;
-	private int axisxOffsetPerClock;
-	private int axisyOffsetPerEvent;
-	private String userId;
-	public String getUserId() {
-		return userId;
+	//For calculating event rect area
+	private int[] eventPointOnAxisX={80,140,200,260,320,380,440}; 
+	//Denotes the 0:00 of point on axis Y
+	private int startOfYAxis; 
+	//Offset per a o'clock
+	private int axisyOffsetPerClock;
+	//Event rect area width
+	private int axisxOffsetPerEvent;
+	private String JSONData;
+	//Calculating if a all-day event
+	private int currentDayOfYear;
+	private Calendar currentTime;
+	//Store parsed JSON data
+	private ArrayList<MemberEvent> memberEventList = new ArrayList();
+	/*
+	 * Paint point,just as you see
+	 */
+	private int paintTopLeftX;
+	private int paintTopLeftY;
+	private int paintTopRightX;
+	private int paintTopRightY;
+	private int paintBottomLeftX;
+	private int paintBottomLeftY;
+	private int paintBottomRightX;
+	private int paintBottomRightY;
+	
+	public class MemberEvent{
+		public String member;
+		public ArrayList<EventInterval> eventInterval;
+		public String getMember() {
+			return member;
+		}
+		public void setMember(String member) {
+			this.member = member;
+		}
+		public ArrayList<EventInterval> getEventInterval() {
+			return eventInterval;
+		}
+		public void setEventInterval(ArrayList<EventInterval> eventInterval) {
+			this.eventInterval = eventInterval;
+		}
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public class EventInterval{
+		public String calFrom;
+		public String calTo;
+		public String getCalFrom() {
+			return calFrom;
+		}
+		public void setCalFrom(String calFrom) {
+			this.calFrom = calFrom;
+		}
+		public String getCalTo() {
+			return calTo;
+		}
+		public void setCalTo(String calTo) {
+			this.calTo = calTo;
+		}
+	}
+	
+	public String getJSONData() {
+		return JSONData;
+	}
+	public void setJSONData(String JSONData) {
+		this.JSONData = JSONData;
 	}
 	/*
 	 * Constructor for using DrawView successfully in layout XML file
 	 */
 	public DrawView(Context context) {
 		super(context);
-		init();
 	}
 	public DrawView(Context context, AttributeSet attrs) {
 
 		super( context, attrs );
 	}
-
 	public DrawView(Context context, AttributeSet attrs, int defStyle) {
 
 		super( context, attrs, defStyle );
 	}
 	private void init() {
 		// TODO Auto-generated method stub
-		int[] eventPointOnAxisX={80,140,200,260,320,380,440};
-		/*
-		 * Loop for draw horizontal line of the grid
-		 */
-		for(int i=0;i<=24;i++)
-		{
-			eventPointOnAxisY[i]=30+i*20;
-		}
-		/*
-		 * Rectangle area for profile
-		 */
-		profileRectLeft=80;
-		profileRectTop=520;
-		axisxOffsetPerClock=20;
-		axisyOffsetPerEvent=60;
+		startOfYAxis = 30;
+		axisyOffsetPerClock=20;
+		axisxOffsetPerEvent=40;
 	}
-
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		// Create Paint Object
+		init();
+		System.out.println("In onDraw:"+getJSONData());
+		/*
+		 * 	Parse JSON data
+		 */
+		JSONData = getJSONData();
+		try {
+			JSONObject joOrigionString = new JSONObject(JSONData);
+			
+			JSONObject joMember = new JSONObject();
+			JSONObject joEvent = new JSONObject();
+			
+			JSONArray jaSocialArray = new JSONArray();
+			JSONArray jaEventArray = new JSONArray();
+			//Get socialArray array
+			jaSocialArray = joOrigionString.getJSONArray("socialArray");
+			for(int i=0 ; i < jaSocialArray.length() ; i++){
+				MemberEvent memberEvent = new MemberEvent();
+				ArrayList<EventInterval> eventIntervalList = new ArrayList();
+				//Get i th element of jaSocialArray
+				joMember = (JSONObject) jaSocialArray.get(i);
+				//Get memberId of jaSocialArray(i)
+				memberEvent.setMember(joMember.getString("memberId"));
+				//Get eventArray array
+				jaEventArray = joMember.getJSONArray("eventArray");
+				
+				for(int j=0 ; j < jaEventArray.length() ; j++){
+					joEvent = (JSONObject) jaEventArray.get(j);
+					//As follows
+					EventInterval eventInterval = new EventInterval();
+					eventInterval.setCalFrom(joEvent.getString("calFrom"));
+					eventInterval.setCalTo(joEvent.getString("calTo"));
+					eventIntervalList.add(eventInterval);
+				}
+				memberEvent.setEventInterval(eventIntervalList);
+				//Add one to memberEventList
+				memberEventList.add(memberEvent);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		// Create Paint Object and draw for a pair of axis
 		Paint p = new Paint();
 		p.setColor(Color.RED);
 		//Create Graduation Axis
@@ -110,17 +194,78 @@ public class DrawView extends View {
 		 */
 		p.reset();
 		p.setStyle(Paint.Style.STROKE);      
-        p.setColor(Color.DKGRAY);      
-        Path pathGrid = new Path();   
-        PathEffect effects = new DashPathEffect(new float[]{5,5,5,5},1);   
-        for(int i=30;i<=510;)
-        {
-        	pathGrid.moveTo(50, i);
-        	pathGrid.lineTo(460,i);
-        	p.setPathEffect(effects);      
-            canvas.drawPath(pathGrid, p); 
-        	i+=40;
-        }
+		p.setColor(Color.DKGRAY);      
+		Path pathGrid = new Path();   
+		PathEffect effects = new DashPathEffect(new float[]{5,5,5,5},1);   
+		for(int i=startOfYAxis;i<=510;)
+		{
+		     	pathGrid.moveTo(50, i);
+		       	pathGrid.lineTo(460,i);
+		       	p.setPathEffect(effects);      
+		       	canvas.drawPath(pathGrid, p); 
+		       	i+=40;
+		}
+		/*
+		 * Reset paint
+		 */
+		p.reset();
+        p.setStyle(Paint.Style.FILL);
+        /*
+         * Current params
+         */
+        currentTime = Calendar.getInstance();
+        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
+        Calendar calFrom = Calendar.getInstance();
+        Calendar calTo = Calendar.getInstance();
+        /*
+         * Draw interval grid
+         */
+		for(int i=0 ; i < Math.min(6,memberEventList.size()) ; i++){
+			switch(i){
+			case 0:
+				p.setColor(Color.BLUE);
+				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
+					calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
+					calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
+					if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear && calTo.get(Calendar.DAY_OF_YEAR)==currentDayOfYear){
+						/*
+						 * Get 4 important points of draw area
+						 */
+						paintTopLeftX = eventPointOnAxisX[0];
+						paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
+						
+						paintTopRightX = eventPointOnAxisX[0]+axisxOffsetPerEvent;
+						paintTopRightY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
+						
+						paintBottomLeftX = eventPointOnAxisX[0];
+						paintBottomLeftY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
+						
+						paintBottomRightX = eventPointOnAxisX[0]+axisxOffsetPerEvent;
+						paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
+						//Begin draw this calculated area
+						canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
+					}
+				}
+				break;
+			case 1:
+				p.setColor(Color.GREEN);
+				break;
+			case 2:
+				 p.setColor(Color.YELLOW);
+				break;
+			case 3:
+				 p.setColor(Color.MAGENTA);
+				break;
+			case 4:
+				 p.setColor(Color.CYAN);
+				break;
+			case 5:
+				 p.setColor(Color.LTGRAY);
+				break;
+			default:
+				break;
+			}
+		}
         
         /*
          * A operation for clip the bitmap object to circle frame
@@ -137,21 +282,6 @@ public class DrawView extends View {
         canvas.drawBitmap(profile[0],null,new Rect(profileRectLeft,profileRectTop,profileRectLeft+40,profileRectTop+40),paint);
         canvas.restore(); 
         */
-        //Test info 
-        p.reset();
-        p.setColor(Color.BLUE);
-        p.setStyle(Paint.Style.FILL);
-        canvas.drawRect(80, 190, 120, 350, p);
-        p.setColor(Color.GREEN);
-        canvas.drawRect(140, 210, 180, 350, p);
-        p.setColor(Color.YELLOW);
-        canvas.drawRect(200, 30, 240, 510, p);
-        p.setColor(Color.MAGENTA);
-        canvas.drawRect(260, 390, 300, 430, p);
-        p.setColor(Color.CYAN);
-        canvas.drawRect(320, 50, 360, 90, p);
-        p.setColor(Color.LTGRAY);
-        canvas.drawRect(380, 190, 420, 350, p);
 	}
 
 	@Override
@@ -190,43 +320,5 @@ public class DrawView extends View {
 				}
 			}
 		}
-	}
-	/*
-	 * AsyncTask for getting picture from the server
-	 */
-	/*
-	class UserImageAT extends AsyncTask<String,Integer,Bitmap>{
-
-		@Override
-		protected Bitmap doInBackground(String... params) {
-			// TODO Auto-generated method stub
-			Bitmap bitmap = getBitmapFromUrl(params[0]);
-			return bitmap;
-		}
-
-		@Override
-		protected void onPostExecute(Bitmap result) {
-			// TODO Auto-generated method stub
-			super.onPostExecute(result);
-			profile[1]=result;
-			}	
-	};
-	private Bitmap getBitmapFromUrl(String imgUrl) {
-		    URL url;
-		    Bitmap bitmap = null;
-		    try {
-		            url = new URL(imgUrl);
-		            InputStream is = url.openConnection().getInputStream();
-		            BufferedInputStream bis = new BufferedInputStream(is);
-		            bitmap = BitmapFactory.decodeStream(bis);
-		            bis.close();
-		    } catch (MalformedURLException e) {
-		            e.printStackTrace();
-		    } catch (IOException e) {
-		            e.printStackTrace();
-		    }
-		    return bitmap;
-		}
-		*/
-	
+	}	
 }

@@ -3,6 +3,11 @@ package com.example.schedule;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +28,10 @@ public class EventDetailActivity extends Activity {
 	private ImageButton previous;
 	private ImageButton next;
 	SyncImageLoader syncImageLoader; 
+	private String jsonStringFromFragment;
+	private ArrayList<String> profileUrl = new ArrayList();
+	private String userId;
+	private String groupId;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -30,7 +39,14 @@ public class EventDetailActivity extends Activity {
 		//Debug info
 		//System.out.println(getIntent().getStringExtra("whichGroup"));
 		//Change title to display the group info
-		setTitle("Group "+getIntent().getStringExtra("whichGroup"));
+		setTitle(getIntent().getStringExtra("groupNameToEventDetailActivity"));
+		/*
+		 * For use of add new members to this group
+		 */
+		userId = getIntent().getStringExtra("userIdToEventDetailActivity");
+		groupId = getIntent().getStringExtra("groupIdToEventDetailActivity");
+		//Get JSON data
+		jsonStringFromFragment = getIntent().getStringExtra("paraToEventDetailActivity");
 		//Find ImageView
 		profile[1]=(ImageView) findViewById(R.id.profile1_event_detail);
 		profile[2]=(ImageView) findViewById(R.id.profile2_event_detail);
@@ -48,20 +64,45 @@ public class EventDetailActivity extends Activity {
 		profile[5].setBackgroundResource(R.drawable.no_photo_small);
 		profile[6].setBackgroundResource(R.drawable.no_photo_small);
 		/*
-		 * Test operations
-		 * execute a AsyncTask here to get data from the server
+		 * Parse member image url
 		 */
-		new FillUserProfileAT(profile[1]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
-		new FillUserProfileAT(profile[2]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
-		new FillUserProfileAT(profile[3]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
-		new FillUserProfileAT(profile[4]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
-		new FillUserProfileAT(profile[5]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
-		new FillUserProfileAT(profile[6]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
+		try {
+			JSONObject joOrigionString = new JSONObject(jsonStringFromFragment);
+			JSONObject joMember = new JSONObject();
+			JSONArray jaSocialArray = new JSONArray();
+			jaSocialArray = joOrigionString.getJSONArray("socialArray");
+			for(int i=0 ; i < jaSocialArray.length() ; i++){
+				joMember = (JSONObject) jaSocialArray.get(i);
+				profileUrl.add(joMember.getString("memberImage"));
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		/*
+		 * Async task to load profile
+		 */
+		if(profileUrl.size() >= 6){
+			for(int i=0 ; i < 6 ; i++){
+				/*
+				 * Attention please
+				 * At here,activity's ImageView index starts with 1,manually
+				 * so,profile[i+1]
+				 */
+				new FillUserProfileAT(profile[i+1]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+			}
+		}else{
+			for(int i=0 ; i < profileUrl.size() ; i++){
+				new FillUserProfileAT(profile[i+1]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+			}
+		}
 		//For display the previous and next button
 		previous = (ImageButton)findViewById(R.id.previous_event_detail);
 		next = (ImageButton)findViewById(R.id.next_event_detail);
+		//View
 		DrawView dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
-		dr.setUserId(getIntent().getStringExtra("whichGroup"));
+		//Send JSON data to DrawView
+		dr.setJSONData(jsonStringFromFragment);
 		previous.setOnClickListener(new ImageButton.OnClickListener(){
 
 			
@@ -78,11 +119,13 @@ public class EventDetailActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				//System.out.println("Next touched");
-            	new FillUserProfileAT(profile[1]).execute("http://192.168.1.103/userimg/UserImage20130817103944.jpg");
 			}
 			
 		});
 	}
+	/*
+	 * Async task
+	 */
 	public class FillUserProfileAT extends AsyncTask<String ,Integer, Bitmap>{  
 	      
 	    private ImageView imageView;   
@@ -91,12 +134,9 @@ public class EventDetailActivity extends Activity {
 	        super();  
 	        this.imageView = imageView; 
 	    }  
-	  
-	  
 	    protected void onPreExecute() {  
 	        // TODO Auto-generated method stub   
 	    }  
-	  
 	    protected Bitmap doInBackground(String... params) {
 	        // TODO Auto-generated method stub   
 	        Bitmap bitmap=null;  
