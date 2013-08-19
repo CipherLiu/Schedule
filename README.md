@@ -12,6 +12,10 @@ All rights reserved! **Cipher Liu** , **Layone**  and  **Axiaolei** 2013!
 - Visual effect
 - Group and friends
 
+# Call Graph #
+
+![Call graph](/SocialCalCallGraph.png)
+
 # Definitions
 
 "Social Calendar" is our Huawei IC 2013 project and it's now temporary,all rights reserved!

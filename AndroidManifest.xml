@@ -64,6 +64,10 @@
             android:name="com.example.schedule.NewFriendsActivity"
             android:label="@string/title_activity_new_friends" >
         </activity>
+        <activity
+            android:name="com.example.schedule.NewFriendsToGroupActivity"
+            android:label="@string/title_activity_new_friends_to_group" >
+        </activity>
     </application>
 
 </manifest>

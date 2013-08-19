@@ -47,7 +47,7 @@ public class ContactsFragment extends Fragment{
 	private Button newGroup;
 	private Button newFriends;
 	private ArrayList<GroupInfo> groupList = new ArrayList();
-	private List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+	//private List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
     private ProgressDialog progressDialog;
     private String paraToNewFriendsActivity;
     private String paraToNewGroupActivity;
@@ -62,7 +62,6 @@ public class ContactsFragment extends Fragment{
       * format goes with {title,info,img}
       */
     private Map<String, Object> map = new HashMap<String, Object>();
-	//DrawView drawView = new DrawView(this.getActivity());
 	ListView lv;
 	public ContactsFragment() {
 		// TODO Auto-generated constructor stub
@@ -73,6 +72,20 @@ public class ContactsFragment extends Fragment{
 		super.onCreate(savedInstanceState);
 		userId = this.getArguments().getString("userId");
 		groupListString = this.getArguments().getString("groupListString");
+        try {
+			JSONArray jsonArray = new JSONArray(groupListString);
+			for(int i = 0; i < jsonArray.length(); i++){
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				GroupInfo group = new GroupInfo();
+				group.setId(jsonObject.getString("_id"));
+				group.setName(jsonObject.getString("groupName"));
+				groupList.add(group);
+			}
+			
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -123,7 +136,7 @@ public class ContactsFragment extends Fragment{
 					int result;
 					if(httpResponse.getStatusLine().getStatusCode() == 200){
 						paraToNewGroupActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
-						JSONObject resultJSON = new JSONObject(paraToNewFriendsActivity);
+						JSONObject resultJSON = new JSONObject(paraToNewGroupActivity);
 						result = resultJSON.getInt("result");
 					}else{
 						return Primitive.CONNECTIONREFUSED;
@@ -147,16 +160,27 @@ public class ContactsFragment extends Fragment{
 		@Override
 		protected void onPostExecute(Integer result) {
 			// TODO Auto-generated method stub
-			super.onPostExecute(result);
-			/*
-			 * Go to NewGroupActivity and pass the params
-			 */
-			Intent intent=new Intent();
-        	intent.setClass(ContactsFragment.this.getActivity(),NewGroupActivity.class );
-        	intent.putExtra("userIdToCreateGp", userId);
-        	intent.putExtra("userIdToSelectInGroup", paraToNewGroupActivity);
-        	intent.putExtra("existGroupList", groupListString);
-			ContactsFragment.this.startActivityForResult(intent, 10);
+			switch(result){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(ContactsFragment.this.getActivity(),
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					/*
+					 * Go to NewGroupActivity and pass the params
+					 */
+					Intent intent=new Intent();
+		        	intent.setClass(ContactsFragment.this.getActivity(),NewGroupActivity.class );
+		        	intent.putExtra("userIdToCreateGp", userId);
+		        	intent.putExtra("userIdToSelectInGroup", paraToNewGroupActivity);
+		        	intent.putExtra("existGroupList", groupListString);
+					ContactsFragment.this.startActivityForResult(intent, 10);
+					break;
+				default:
+					break;
+			}
 		}
 
 		@Override
@@ -207,15 +231,26 @@ public class ContactsFragment extends Fragment{
 		@Override
 		protected void onPostExecute(Integer result) {
 			// TODO Auto-generated method stub
-			super.onPostExecute(result);
-			/*
-			 * Go to NewFriendsActivity and pass the params
-			 */
-			Intent intent=new Intent();
-        	intent.setClass(ContactsFragment.this.getActivity(),NewFriendsActivity.class );
-        	intent.putExtra("userIdToAddNewFriends", userId);
-        	intent.putExtra("userIdNewlyReg", paraToNewFriendsActivity);
-        	ContactsFragment.this.startActivityForResult(intent, 11);
+			switch(result){
+				case Primitive.CONNECTIONREFUSED:
+					Toast connectError = Toast.makeText(ContactsFragment.this.getActivity(),
+						     "Cannot connect to the server", Toast.LENGTH_LONG);
+					connectError.setGravity(Gravity.CENTER, 0, 0);
+					connectError.show();
+					break;
+				case Primitive.ACCEPT:
+					/*
+					 * Go to NewFriendsActivity and pass the params
+					 */
+					Intent intent=new Intent();
+		        	intent.setClass(ContactsFragment.this.getActivity(),NewFriendsActivity.class );
+		        	intent.putExtra("userIdToAddNewFriends", userId);
+		        	intent.putExtra("userIdNewlyReg", paraToNewFriendsActivity);
+		        	ContactsFragment.this.startActivityForResult(intent, 11);
+		        	break;
+		        default:
+		        	break;
+			}
 		}
 
 		@Override
@@ -237,19 +272,8 @@ public class ContactsFragment extends Fragment{
 			group.setId(newCreateGroupId);
 			group.setName(newCreateGroupName);
 			groupList.add(group);
-			//Change ListView
-			map = new HashMap<String, Object>();
-			map.put("title", newCreateGroupName);
-			map.put("info", "");
-			map.put("img", R.drawable.no_photo_small);
-			list.add(map);
 			//Notify
-			SimpleAdapter sAdapter = new SimpleAdapter(this.getActivity(),list,R.layout.group_listview_item,
-	                new String[]{"title","info","img"},
-	                new int[]{R.id.item_title,R.id.item_info,R.id.item_img});
-			sAdapter.notifyDataSetChanged();
-			//Debug info
-			//System.out.println("From new group");
+			init();
 		}
 	}
 	/*
@@ -371,27 +395,12 @@ public class ContactsFragment extends Fragment{
 		}
 	}
 	private List<Map<String, Object>> getData() {
-        //List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
         /*
          * Getting group data here
          * format goes with {title,info,img}
          */
-        //Map<String, Object> map = new HashMap<String, Object>();
-		
-        try {
-			JSONArray jsonArray = new JSONArray(groupListString);
-			for(int i = 0; i < jsonArray.length(); i++){
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				GroupInfo group = new GroupInfo();
-				group.setId(jsonObject.getString("_id"));
-				group.setName(jsonObject.getString("groupName"));
-				groupList.add(group);
-			}
-			
-		} catch (JSONException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        Map<String, Object> map = new HashMap<String, Object>();
         for(int i=0 ; i< groupList.size();i++){
         	map = new HashMap<String, Object>();
         	map.put("title", groupList.get(i).getName());
@@ -399,6 +408,7 @@ public class ContactsFragment extends Fragment{
         	map.put("img", R.drawable.no_photo_small);
         	list.add(map);
         }
+        
         return list;
 	}
 }

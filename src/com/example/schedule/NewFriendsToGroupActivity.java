@@ -1,41 +1,14 @@
 package com.example.schedule;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import android.app.Activity;  
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
-import android.os.Bundle;  
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;  
-import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;  
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.ListView;  
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;  
-import android.widget.TextView;
-import android.view.MenuItem.OnMenuItemClickListener;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -43,142 +16,171 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class NewFriendsActivity extends Activity {
+import com.example.schedule.NewFriendsActivity.AddFriendsRequestAT;
+import com.example.schedule.NewFriendsActivity.GroupItemAdapter;
+
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.MenuItem.OnMenuItemClickListener;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+
+public class NewFriendsToGroupActivity extends Activity {
 	private List<Map<String, Object>> mData;
-	private ListView lv_new_friends;
+	private ListView lv_new_friends_to_group;
     private GroupItemAdapter mAdapter;
     private ArrayList<String> list;
     private ArrayList<UserInfo> friends = new ArrayList();
     private ArrayList<String> members = new ArrayList();
-    private static String url = Global.BASICURL+"GroupUpdate";
+    private static String url = Global.BASICURL+"MemberAdd";
     private String userId;
+    private String groupId;
+    private String httpRespond;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_new_friends);
-        lv_new_friends = (ListView) findViewById(R.id.lv_new_friends);
-        mAdapter = new GroupItemAdapter(this, lv_new_friends);
-        userId = getIntent().getStringExtra("userIdToAddNewFriends");
-        /*
-         * If not null,parse the JSON string to fill ListView
-         */
-        if(!getIntent().getStringExtra("userIdNewlyReg").isEmpty()){
-	        try {
-					JSONObject resultJSON = new JSONObject(getIntent().getStringExtra("userIdNewlyReg"));
-					JSONObject retrieveArray = new JSONObject();
-					JSONArray resultJSONArray = new JSONArray();
-					resultJSONArray = resultJSON.getJSONArray("strangersArray");
-					for(int i=0 ; i< resultJSONArray.length();i++){
-						UserInfo user = new UserInfo();
-						retrieveArray = (JSONObject) resultJSONArray.get(i);
-						user.setUsername(retrieveArray.getString("strangerName"));												
-				        user.setImage(retrieveArray.getString("strangerImage"));
-				        user.setUserId(retrieveArray.getString("strangerId"));
-				        friends.add(user); 
-					}
-				} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        
-	        
-	        for(int i=0 ; i < friends.size();i++){
-	        	mAdapter.addUser(friends.get(i));
-	        }
-	        lv_new_friends.setAdapter(mAdapter);
-	        lv_new_friends.setOnItemClickListener(new OnItemClickListener() {
-	
-	            @Override
-	            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-	                    long arg3) {
-	            	//Find touched CheckBox 
-	            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_friends_is_add);
-	            	cb.toggle();
-	            	if(cb.isChecked()){
-	            		members.add(friends.get(arg2).getUserId());
-	            	}else{
-	            		
-	            		for(int i = 0; i<members.size(); i++){
-	            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
-	            				members.remove(i);
-	            			}
-	            		}
-	            	}
-	                
-	            }
-	        });
-        }
-    }
+		setContentView(R.layout.activity_new_friends_to_group);
+		
+		lv_new_friends_to_group = (ListView) findViewById(R.id.lv_new_friends_to_group);
+	    mAdapter = new GroupItemAdapter(this, lv_new_friends_to_group);
+	    //Get userId and groupId,for use of sending string
+	    userId = getIntent().getStringExtra("userIdToAddFriendsToGroup");
+	    groupId = getIntent().getStringExtra("groupIdToAddFriendsToGroup");
+	    
+	    if(!getIntent().getStringExtra("paraToNewFriendsToGroupActivity").isEmpty()){
+		        try {
+						JSONObject resultJSON = new JSONObject(getIntent().getStringExtra("paraToNewFriendsToGroupActivity"));
+						JSONObject retrieveArray = new JSONObject();
+						JSONArray resultJSONArray = new JSONArray();
+						resultJSONArray = resultJSON.getJSONArray("memberExcludeArray");
+						for(int i=0 ; i< resultJSONArray.length();i++){
+							UserInfo user = new UserInfo();
+							retrieveArray = (JSONObject) resultJSONArray.get(i);
+							user.setUsername(retrieveArray.getString("memberName"));												
+					        user.setImage(retrieveArray.getString("memberImage"));
+					        user.setUserId(retrieveArray.getString("memberId"));
+					        friends.add(user); 
+						}
+						
+					} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        for(int i=0 ; i < friends.size();i++){
+		        	mAdapter.addUser(friends.get(i));
+		        }
+		        lv_new_friends_to_group.setAdapter(mAdapter);
+		        lv_new_friends_to_group.setOnItemClickListener(new OnItemClickListener() {
+		
+		            @Override
+		            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+		                    long arg3) {
+		            	//Find touched CheckBox 
+		            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_friends_to_group_is_add);
+		            	cb.toggle();
+		            	if(cb.isChecked()){
+		            		members.add(friends.get(arg2).getUserId());
+		            	}else{
+		            		
+		            		for(int i = 0; i<members.size(); i++){
+		            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
+		            				members.remove(i);
+		            			}
+		            		}
+		            	}
+		                
+		            }
+		        });
+	       }
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		MenuInflater inflater = getMenuInflater();     
-	    inflater.inflate(R.menu.activity_new_group, menu);
-	    MenuItem miNewGPOk = (MenuItem)menu.findItem(R.id.btn_new_group_ok);
-	    MenuItem miNewGPCancel = (MenuItem)menu.findItem(R.id.btn_new_group_cancel);
-	    miNewGPOk.setOnMenuItemClickListener(new OnMenuItemClickListener(){
-
-			public boolean onMenuItemClick(MenuItem item) {
-				// TODO Auto-generated method stub
-				if(members.size() != 0){
-					//Retrieve member as a string
-					JSONObject sendObject = new JSONObject();
-					try {
-						
-						JSONArray friends = new JSONArray();
-						for(int i=0 ; i < members.size() ; i++){
-							friends.put(members.get(i));
-							sendObject.put("friends", friends);
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.activity_new_friends_to_group, menu);
+		MenuItem miAddFriendsToGroupOk = (MenuItem)menu.findItem(R.id.btn_new_friends_to_group_ok);
+		MenuItem miAddFriendsToGroupCancel = (MenuItem)menu.findItem(R.id.btn_new_friends_to_group_cancel);
+		miAddFriendsToGroupOk.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+				public boolean onMenuItemClick(MenuItem item) {
+					// TODO Auto-generated method stub
+					if(members.size() != 0){
+						//Retrieve member as a string
+						JSONObject sendObject = new JSONObject();
+						try {
+							
+							JSONArray friends = new JSONArray();
+							for(int i=0 ; i < members.size() ; i++){
+								friends.put(members.get(i));
+								sendObject.put("friends", friends);
+							}
+							sendObject.put("userId", userId);
+							sendObject.put("groupId", groupId);
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-						sendObject.put("userId", userId);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						new AddFriendsToGroupRequestAT().execute(sendObject.toString());
+					}else{
+						Toast inputInvalid = Toast.makeText(NewFriendsToGroupActivity.this,
+							     "Please select at least one", Toast.LENGTH_LONG);
+						inputInvalid.setGravity(Gravity.CENTER, 0, 0);
+						inputInvalid.show();
 					}
-					//System.out.println("Test send string:"+sendObject.toString());
-					new AddFriendsRequestAT().execute(sendObject.toString());
-				}else{
-					Toast inputInvalid = Toast.makeText(NewFriendsActivity.this,
-						     "Please select at least one", Toast.LENGTH_LONG);
-					inputInvalid.setGravity(Gravity.CENTER, 0, 0);
-					inputInvalid.show();
+					return true;
 				}
-				return true;
-			}
-	    	
-	    });
-	    
-	    miNewGPCancel.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+		    	
+		    });
+		    
+		miAddFriendsToGroupCancel.setOnMenuItemClickListener(new OnMenuItemClickListener(){
 
-			public boolean onMenuItemClick(MenuItem item) {
-				// TODO Auto-generated method stub 
-	            finish(); 
-				return true;
-			}
-	    	
-	    });
-	    return true;
+				public boolean onMenuItemClick(MenuItem item) {
+					// TODO Auto-generated method stub 
+		            finish(); 
+					return true;
+				}
+		    	
+		    });
+		    return true;
 	}
-	class AddFriendsRequestAT extends AsyncTask<String,Integer,Integer>{
+	class AddFriendsToGroupRequestAT extends AsyncTask<String,Integer,Integer>{
 
 		@Override
 		protected Integer doInBackground(String... params) {
 			// TODO Auto-generated method stub
 			if(!params[0].isEmpty()){
 				try {
-					
+					/*
+					 * construct a http post request
+					 */
 					HttpPost httpPost = new HttpPost(url);
 					HttpClient httpClient = new DefaultHttpClient();
 					HttpEntity hEntity;
 					
 					hEntity = new StringEntity(params[0],"utf-8");
-					//System.out.println("Test send string:"+params[0]);
+					System.out.println("Test sending string(in new friends to group async task):"+params[0]);
 					httpPost.setEntity(hEntity);
 					HttpResponse httpResponse = httpClient.execute(httpPost);
 					int result;
 					if(httpResponse.getStatusLine().getStatusCode() == 200){
-						String retSrc = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
-						JSONObject resultJSON = new JSONObject(retSrc);
+						httpRespond = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8"); 
+						JSONObject resultJSON = new JSONObject(httpRespond);
 						result = resultJSON.getInt("result");
 					}else{
 						return Primitive.CONNECTIONREFUSED;
@@ -202,19 +204,15 @@ public class NewFriendsActivity extends Activity {
 			// TODO Auto-generated method stub
 			switch(result){
 			case Primitive.CONNECTIONREFUSED:
-				Toast connectError = Toast.makeText(NewFriendsActivity.this,
+				Toast connectError = Toast.makeText(NewFriendsToGroupActivity.this,
 					     "Cannot connect to the server", Toast.LENGTH_LONG);
 				connectError.setGravity(Gravity.CENTER, 0, 0);
 				connectError.show();
 				break;
 			case Primitive.ACCEPT:
-				/*
-				 * Just receive a OK flag and finish this activity
-				 */
 	            finish(); 
 				break;
 			default:
-				 
 				break;
 			}
 		}
@@ -224,11 +222,6 @@ public class NewFriendsActivity extends Activity {
 			// TODO Auto-generated method stub
 		}
 	}
-    private void dataChanged() {
-        // Notify listView
-        mAdapter.notifyDataSetChanged();
-    }
-
     public class GroupItemAdapter extends BaseAdapter {  
         private LayoutInflater mInflater;  
         private Vector<UserInfo> mUsers = new Vector<UserInfo>();  
@@ -280,17 +273,17 @@ public class NewFriendsActivity extends Activity {
   
         public View getView(int position, View convertView, ViewGroup parent) {  
             if (convertView == null) {  
-                convertView = mInflater.inflate(R.layout.new_friends_listview_item,  
+                convertView = mInflater.inflate(R.layout.new_friends_to_group_listview_item,  
                         null);  
             }  
             UserInfo user = mUsers.get(position);  
             convertView.setTag(position);  
             ImageView ivUserProfile = (ImageView) convertView.findViewById(
-            		R.id.iv_new_friends_user_profile);
+            		R.id.iv_new_friends_to_group_user_profile);
             TextView tvUserName = (TextView)convertView.findViewById(
-            		R.id.tv_new_friends_username);
+            		R.id.tv_new_friends_to_group_username);
             CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
-            		R.id.cb_new_friends_is_add);
+            		R.id.cb_new_friends_to_group_is_add);
             
             tvUserName.setText(user.getUsername());  
             if(!user.getImage().contentEquals("null")){
@@ -313,7 +306,7 @@ public class NewFriendsActivity extends Activity {
                 View view = mListView.findViewWithTag(t);  
                 if (view != null) {  
                     ImageView iv = (ImageView) view  
-                            .findViewById(R.id.iv_new_friends_user_profile);  
+                            .findViewById(R.id.iv_new_friends_to_group_user_profile);  
                     iv.setBackgroundDrawable(drawable);  
                 }  
             }  
@@ -323,7 +316,7 @@ public class NewFriendsActivity extends Activity {
                 View view = mListView.findViewWithTag(model);  
                 if (view != null) {  
                     ImageView iv = (ImageView) view  
-                            .findViewById(R.id.iv_new_friends_user_profile);  
+                            .findViewById(R.id.iv_new_friends_to_group_user_profile);  
                     iv.setBackgroundResource(R.drawable.no_photo_small);  
                 }  
             }  
@@ -367,6 +360,5 @@ public class NewFriendsActivity extends Activity {
             }  
         };  
     }
-    
-}
 
+}

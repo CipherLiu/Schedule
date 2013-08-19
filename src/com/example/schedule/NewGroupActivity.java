@@ -175,27 +175,34 @@ public class NewGroupActivity extends Activity {
 				}
 				if(canCreateNewGroup)
 				{
-					if(!newGroupName.isEmpty()){
-						JSONObject sendObject = new JSONObject();
-						try {
-							
-							JSONArray friends = new JSONArray();
-							for(int i=0 ; i < members.size() ; i++){
-								friends.put(members.get(i));
-								sendObject.put("friends", friends);
+					if(members.size()!=0){
+						if(!newGroupName.isEmpty()){
+							JSONObject sendObject = new JSONObject();
+							try {
+								
+								JSONArray friends = new JSONArray();
+								for(int i=0 ; i < members.size() ; i++){
+									friends.put(members.get(i));
+									sendObject.put("friends", friends);
+								}
+								sendObject.put("userId", userId);
+								sendObject.put("groupName", newGroupName);
+								
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
-							sendObject.put("userId", userId);
-							sendObject.put("groupName", newGroupName);
-							
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							//System.out.println("In New group at,send string is:"+sendObject.toString());
+							new AddGroupRequestAT().execute(sendObject.toString());
+						}else{
+							Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
+								     "Input new group name", Toast.LENGTH_LONG);
+							inputInvalid.setGravity(Gravity.CENTER, 0, 0);
+							inputInvalid.show();
 						}
-						//System.out.println("In New group at,send string is:"+sendObject.toString());
-						new AddGroupRequestAT().execute(sendObject.toString());
 					}else{
 						Toast inputInvalid = Toast.makeText(NewGroupActivity.this,
-							     "Input new group name", Toast.LENGTH_LONG);
+							     "Please select at least one", Toast.LENGTH_LONG);
 						inputInvalid.setGravity(Gravity.CENTER, 0, 0);
 						inputInvalid.show();
 					}
