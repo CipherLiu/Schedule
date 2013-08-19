@@ -63,7 +63,9 @@ public class NewFriendsToGroupActivity extends Activity {
 	    //Get userId and groupId,for use of sending string
 	    userId = getIntent().getStringExtra("userIdToAddFriendsToGroup");
 	    groupId = getIntent().getStringExtra("groupIdToAddFriendsToGroup");
-	    
+	    /*
+	     * Parse JSON data to fill ListView
+	     */
 	    if(!getIntent().getStringExtra("paraToNewFriendsToGroupActivity").isEmpty()){
 		        try {
 						JSONObject resultJSON = new JSONObject(getIntent().getStringExtra("paraToNewFriendsToGroupActivity"));

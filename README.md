@@ -12,6 +12,13 @@ All rights reserved! **Cipher Liu** , **Layone**  and  **Axiaolei** 2013!
 - Visual effect
 - Group and friends
 
+# Features #
+
+![Call graph](/res/drawable-hdpi/view_page_1.png)
+![Call graph](/res/drawable-hdpi/view_page_2.png)
+![Call graph](/res/drawable-hdpi/view_page_3.png)
+![Call graph](/res/drawable-hdpi/view_page_4.png)
+
 # Call Graph #
 
 ![Call graph](/SocialCalCallGraph.png)

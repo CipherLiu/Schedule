@@ -250,7 +250,7 @@ public class EventDetailActivity extends Activity {
 					break;
 				case Primitive.ACCEPT:
 					/*
-					 * Go to NewFriendsActivity and pass the params
+					 * Go to NewFriendsToGroupActivity and pass the params
 					 */
 					Intent intent=new Intent();
 		        	intent.setClass(EventDetailActivity.this,NewFriendsToGroupActivity.class );
