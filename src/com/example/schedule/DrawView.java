@@ -45,11 +45,11 @@ public class DrawView extends View {
 	private int[] eventPointOnAxisX = {80,140,200,260,320,380,440}; 
 	private int[] isIdle = new int[1441];
 	//Denotes the 0:00 of point on axis Y
-	private int startOfYAxis; 
+	private int startOfYAxis = 30;; 
 	//Offset per o'clock
-	private int axisyOffsetPerClock;
+	private int axisyOffsetPerClock = 20;
 	//Event rect area width
-	private int axisxOffsetPerEvent;
+	private int axisxOffsetPerEvent = 40;
 	private String JSONData;
 	//Calculating if a all-day event
 	private int currentDayOfYear;
@@ -130,15 +130,8 @@ public class DrawView extends View {
 
 		super( context, attrs, defStyle );
 	}
-	private void init() {
-		// TODO Auto-generated method stub
-		startOfYAxis = 30;
-		axisyOffsetPerClock=20;
-		axisxOffsetPerEvent=40;
-	}
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		init();
 		System.out.println("In onDraw:"+getJSONData());
 		/*
 		 * 	Parse JSON data
@@ -236,458 +229,27 @@ public class DrawView extends View {
 			switch(i){
 			case 0:
 				p.setColor(Color.RED);
-				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-					calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-					calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-					//Event interval starts before today
-					if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-						//Event interval ends at today
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							/*
-							 * Get 4 important points of draw area
-							 */
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-							//Begin draw this calculated area
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							//Color interval
-							for(int k= 0; k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
-						}
-						/*
-						 * Event interval ends after today,
-						 * meaning the event is a all-day event,
-						 * draw the whole rectangle area
-						 */
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-							//Begin draw this calculated area
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= 0; k < 1440;k++){
-								isIdle[k] = 1;
-							}
-						}
-						else{
-						/*
-						 * A event starts before today,and it ends before today
-						 * So,it will not show here,
-						 * just do nothing
-						 */
-						}
-						
-					}
-					//Event interval starts at today
-					else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-						//Event interval ends at today
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-							
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
-						}
-						//Event interval ends after today
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-							
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-							
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-								isIdle[k] = 1;
-							}
-						}
-						else{
-						/*
-						 * Logical error!
-						 * should not be here,
-						 * just do nothing
-						 */
-						}
-					}
-					else{
-					/*
-					 * Event interval starts in the future,
-					 * will  not be here,
-					 * just do nothing 
-					 */
-					}
-				}
+				doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			case 1:
 				p.setColor(Color.GREEN);
-				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-					calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-					calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-					//Event interval starts before today
-					if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-						//Event interval ends at today
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-							//Begin draw this calculated area
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							//Color interval
-							for(int k= 0; k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
-						}
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-							//Begin draw this calculated area
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= 0; k < 1440;k++){
-								isIdle[k] = 1;
-							}
-						}
-						else{
-						}
-						
-					}
-					//Event interval starts at today
-					else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-						//Event interval ends at today
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-							
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
-						}
-						//Event interval ends after today
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							paintTopLeftX = eventPointOnAxisX[i];
-							paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-							
-							paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-							paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-							
-							canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-							for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-								isIdle[k] = 1;
-							}
-						}
-						else{
-						}
-					}
-					else{
-					}
-				}
+				doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			case 2:
 				 p.setColor(Color.YELLOW);
-					for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-						calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-						calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-						//Event interval starts before today
-						if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								//Color interval
-								for(int k= 0; k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= 0; k < 1440;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-							
-						}
-						//Event interval starts at today
-						else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							//Event interval ends after today
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-								
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-						}
-						else{
-						}
-					}
+				 doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			case 3:
 				 p.setColor(Color.MAGENTA);
-					for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-						calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-						calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-						//Event interval starts before today
-						if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								//Color interval
-								for(int k= 0; k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= 0; k < 1440;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-							
-						}
-						//Event interval starts at today
-						else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							//Event interval ends after today
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-								
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-						}
-						else{
-						}
-					}
+				 doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			case 4:
 				 p.setColor(Color.CYAN);
-					for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-						calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-						calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-						//Event interval starts before today
-						if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								//Color interval
-								for(int k= 0; k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= 0; k < 1440;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-							
-						}
-						//Event interval starts at today
-						else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							//Event interval ends after today
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-								
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-						}
-						else{
-						}
-					}
+				 doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			case 5:
 				 p.setColor(Color.DKGRAY);
-					for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-						calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-						calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-						//Event interval starts before today
-						if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								//Color interval
-								for(int k= 0; k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								//Begin draw this calculated area
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= 0; k < 1440;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-							
-						}
-						//Event interval starts at today
-						else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							//Event interval ends at today
-							if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-									isIdle[k] = 1;
-								}
-							}
-							//Event interval ends after today
-							else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-								paintTopLeftX = eventPointOnAxisX[i];
-								paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
-								
-								paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
-								paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
-								
-								canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
-								for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-									isIdle[k] = 1;
-								}
-							}
-							else{
-							}
-						}
-						else{
-						}
-					}
+				 doDrawRect(canvas , p , i , calFrom , calTo);
 				break;
 			default:
 				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
@@ -777,6 +339,100 @@ public class DrawView extends View {
 		float y=event.getY();
 		touchedWhichEvent(x,y);
 		return super.onTouchEvent(event);
+	}
+	private void doDrawRect(Canvas canvas,Paint p,int i,Calendar calFrom,Calendar calTo){
+		for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
+			calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
+			calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
+			//Event interval starts before today
+			if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
+				//Event interval ends at today
+				if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+					/*
+					 * Get 4 important points of draw area
+					 */
+					paintTopLeftX = eventPointOnAxisX[i];
+					paintTopLeftY = startOfYAxis;
+
+					paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
+					paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
+					//Begin draw this calculated area
+					canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
+					//Color interval
+					for(int k= 0; k < minutesDiff(calTo);k++){
+						isIdle[k] = 1;
+					}
+				}
+				/*
+				 * Event interval ends after today,
+				 * meaning the event is a all-day event,
+				 * draw the whole rectangle area
+				 */
+				else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
+					paintTopLeftX = eventPointOnAxisX[i];
+					paintTopLeftY = startOfYAxis;
+
+					paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
+					paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
+					//Begin draw this calculated area
+					canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
+					for(int k= 0; k < 1440;k++){
+						isIdle[k] = 1;
+					}
+				}
+				else{
+				/*
+				 * A event starts before today,and it ends before today
+				 * So,it will not show here,
+				 * just do nothing
+				 */
+				}
+				
+			}
+			//Event interval starts at today
+			else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+				//Event interval ends at today
+				if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+					paintTopLeftX = eventPointOnAxisX[i];
+					paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
+
+					paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
+					paintBottomRightY = startOfYAxis+(calTo.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calTo.get(Calendar.MINUTE))/3;
+					
+					canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
+					for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
+						isIdle[k] = 1;
+					}
+				}
+				//Event interval ends after today
+				else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
+					paintTopLeftX = eventPointOnAxisX[i];
+					paintTopLeftY = startOfYAxis+(calFrom.get(Calendar.HOUR_OF_DAY))*axisyOffsetPerClock+(calFrom.get(Calendar.MINUTE))/3;
+					
+					paintBottomRightX = eventPointOnAxisX[i]+axisxOffsetPerEvent;
+					paintBottomRightY = startOfYAxis+24*axisyOffsetPerClock;
+					
+					canvas.drawRect(paintTopLeftX, paintTopLeftY, paintBottomRightX, paintBottomRightY, p);
+					for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
+						isIdle[k] = 1;
+					}
+				}
+				else{
+				/*
+				 * Logical error!
+				 * should not be here,
+				 * just do nothing
+				 */
+				}
+			}
+			else{
+			/*
+			 * Event interval starts in the future,
+			 * will  not be here,
+			 * just do nothing 
+			 */
+			}
+		}
 	}
 	private long minutesDiff(Calendar minuteToCalculate){
         todayMinStart = Calendar.getInstance();
