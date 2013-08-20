@@ -56,6 +56,10 @@ public class EventDetailActivity extends Activity {
 	private static String group_social_url = Global.BASICURL+"GroupSocial";
 	private int currentDayOfYear;
 	private Calendar currentCal;
+	private int sixTupleIndex = 0;
+	private int sixTupleNumber;
+	private int memberNumber;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -104,6 +108,12 @@ public class EventDetailActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		memberNumber = profileUrl.size();
+		sixTupleNumber = memberNumber/6;
+		
+		System.out.println("Member num is:"+memberNumber);
+		System.out.println("sixTupleNumber num is:"+sixTupleNumber);
+		System.out.println("JSON data is:"+jsonStringFromFragment);
 		/*
 		 * Async task to load profile
 		 */
@@ -120,6 +130,9 @@ public class EventDetailActivity extends Activity {
 			for(int i=0 ; i < profileUrl.size() ; i++){
 				new FillUserProfileAT(profile[i+1]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 			}
+			for(int i=profileUrl.size()+1 ; i <= 6 ; i++){
+				profile[i].setBackgroundResource(0);
+			}
 		}
 		//For display the previous and next button
 		previous = (ImageButton)findViewById(R.id.previous_event_detail);
@@ -127,18 +140,17 @@ public class EventDetailActivity extends Activity {
 		//Current day of year
 		currentCal = Calendar.getInstance();
 		currentDayOfYear = currentCal.get(Calendar.DAY_OF_YEAR);;
-		System.out.println("Current day of year(in activity)"+currentDayOfYear);
 		//View
 		dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
 		//Send JSON data to DrawView
-		String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
-		dr.setJSONData(str);
+		dr.setJSONData(jsonStringFromFragment);
 		dr.setBaseDay(currentDayOfYear);
 		previous.setOnClickListener(new ImageButton.OnClickListener(){
 
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				/*
 				//Re-draw
 				dayOffset--;
 				if(dayOffset < 0){
@@ -148,13 +160,46 @@ public class EventDetailActivity extends Activity {
 					alreadyToday.show();
 					dayOffset=0;
 				}else{
+					dr.setSixTupleIndex(sixTupleIndex);
 					dr.setJSONData(paraListToDrawView.get(dayOffset));
 					dr.setBaseDay(currentDayOfYear+dayOffset);
 					dr.postInvalidate();
 				}
-				//dr.setJSONData(jsonStringFromFragment);
-				//dr.postInvalidate();
-				System.out.println("In Previous,dayOffset is "+dayOffset);
+				*/
+				if(memberNumber > 6){
+					sixTupleIndex--;
+					if(sixTupleIndex < 0){
+						Toast tip = Toast.makeText(EventDetailActivity.this,
+							     "咩，已经是前六个了啊！", Toast.LENGTH_LONG);
+						tip.setGravity(Gravity.CENTER, 0, 0);
+						tip.show();
+						//Flag holder
+						sixTupleIndex = 0;
+					}
+					else{
+						//Clean up
+						for(int i=1;i<=6;i++){
+							profile[i].setBackgroundResource(R.drawable.no_photo_small);
+							profile[i].setImageBitmap(null);
+						}
+						//New
+						for(int i = sixTupleIndex*6 ; i<(sixTupleIndex*6+6) ; i++){
+							if(!profileUrl.get(i).toString().equals("null")){
+								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							}
+						}
+						dr.setSixTupleIndex(sixTupleIndex);
+						dr.setJSONData(jsonStringFromFragment);
+						dr.setBaseDay(currentDayOfYear);
+						dr.postInvalidate();
+					}
+				}else{
+					Toast tip = Toast.makeText(EventDetailActivity.this,
+						     "咩，就这几个人！", Toast.LENGTH_LONG);
+					tip.setGravity(Gravity.CENTER, 0, 0);
+					tip.show();
+					sixTupleIndex=0;
+				}
 			}
 			
 		});
@@ -163,6 +208,7 @@ public class EventDetailActivity extends Activity {
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				/*
 				dayOffset++;
 				//Request new data
 				if(dayOffset == paraListToDrawView.size()){
@@ -182,12 +228,56 @@ public class EventDetailActivity extends Activity {
 				}
 				//Read from cached data
 				else{
+					dr.setSixTupleIndex(sixTupleIndex);
 					dr.setJSONData(paraListToDrawView.get(dayOffset));
 					dr.setBaseDay(currentDayOfYear+dayOffset);
-					System.out.println("In next,json data is:"+paraListToDrawView.get(dayOffset));
 					dr.postInvalidate();
 				}
-				System.out.println("In Next,dayOffset is "+dayOffset);
+				*/
+				sixTupleIndex++;
+				if(memberNumber > 6 && sixTupleIndex<=sixTupleNumber){
+					if(sixTupleIndex < sixTupleNumber){
+						//Clean up
+						for(int i=1;i<=6;i++){
+							profile[i].setBackgroundResource(R.drawable.no_photo_small);
+							profile[i].setImageBitmap(null);
+						}
+						//New profile
+						for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+6);i++){
+							if(!profileUrl.get(i).toString().equals("null")){
+								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							}
+						}
+						dr.setSixTupleIndex(sixTupleIndex);
+						dr.postInvalidate();
+					}else{
+						for(int i=1;i<=6;i++){
+							profile[i].setBackgroundResource(R.drawable.no_photo_small);
+							profile[i].setImageBitmap(null);
+						}
+						for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+memberNumber%6);i++){
+							if(!profileUrl.get(i).toString().equals("null")){
+								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							}
+						}
+						for(int i = memberNumber%6+1 ; i<=6;i++){
+							profile[i].setBackgroundResource(0);
+						}
+						//String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":
+						//\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
+						dr.setSixTupleIndex(sixTupleIndex);
+						dr.setJSONData(jsonStringFromFragment);
+						dr.setBaseDay(currentDayOfYear);
+						dr.postInvalidate();
+					}
+
+				}else{
+					sixTupleIndex--;
+					Toast tip = Toast.makeText(EventDetailActivity.this,
+						     "咩，就这几个人！", Toast.LENGTH_LONG);
+					tip.setGravity(Gravity.CENTER, 0, 0);
+					tip.show();
+				}
 			}
 			
 		});

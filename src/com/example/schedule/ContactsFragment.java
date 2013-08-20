@@ -381,7 +381,6 @@ public class ContactsFragment extends Fragment{
         	intent.putExtra("groupIdToEventDetailActivity",groupIdToEventDetailActivity);
         	intent.putExtra("groupNameToEventDetailActivity", groupNameToEventDetailActivity);
         	intent.putExtra("paraToEventDetailActivity", paraToEventDetailActivity);
-        	System.out.println("Before start activity:"+paraToEventDetailActivity);
         	ContactsFragment.this.startActivity(intent);
 				break;
 			default:

@@ -52,8 +52,11 @@ public class DrawView extends View {
 	private int axisyOffsetPerClock = 20;
 	//Event rect area width
 	private int axisxOffsetPerEvent = 40;
+	
 	private String JSONData;
 	private int baseDay;
+	private int sixTupleIndex;
+	private int sixTupleNumber;
 	//Calculating if a all-day event
 	private int currentDayOfYear;
 	private Calendar currentTime;
@@ -124,6 +127,12 @@ public class DrawView extends View {
 	public void setBaseDay(int baseDay) {
 		this.baseDay = baseDay;
 	}
+	public int getSixTupleIndex() {
+		return sixTupleIndex;
+	}
+	public void setSixTupleIndex(int sixTupleIndex) {
+		this.sixTupleIndex = sixTupleIndex;
+	}
 	/*
 	 * Attention please!!!
 	 * Constructor for using DrawView successfully in layout XML file
@@ -144,7 +153,7 @@ public class DrawView extends View {
 		super.onDraw(canvas);
 		JSONData = getJSONData();
 		baseDay = getBaseDay();
-		System.out.println("Current day of year(in drawview)"+baseDay);
+		sixTupleIndex = getSixTupleIndex();
 		/*
 		 * Clear dirt data
 		 */
@@ -244,31 +253,34 @@ public class DrawView extends View {
         /*
          * Draw interval grid
          */
-		for(int i=0 ; i < memberEventList.size() ; i++){
-			switch(i){
+        sixTupleNumber = memberEventList.size()/6;
+        int realIndex=0;
+		for(int i=sixTupleIndex*6 ; i < ((sixTupleIndex < sixTupleNumber)?(sixTupleIndex*6+6): (sixTupleIndex*6 +memberEventList.size()%6)); i++){
+			realIndex = i;
+			switch(i%6){
 			case 0:
 				p.setColor(Color.RED);
-				doDrawRect(canvas , p , i , calFrom , calTo);
+				doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			case 1:
 				p.setColor(Color.GREEN);
-				doDrawRect(canvas , p , i , calFrom , calTo);
+				doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			case 2:
 				 p.setColor(Color.YELLOW);
-				 doDrawRect(canvas , p , i , calFrom , calTo);
+				 doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			case 3:
 				 p.setColor(Color.MAGENTA);
-				 doDrawRect(canvas , p , i , calFrom , calTo);
+				 doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			case 4:
 				 p.setColor(Color.CYAN);
-				 doDrawRect(canvas , p , i , calFrom , calTo);
+				 doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			case 5:
 				 p.setColor(Color.DKGRAY);
-				 doDrawRect(canvas , p , i , calFrom , calTo);
+				 doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			default:
 				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
@@ -359,10 +371,10 @@ public class DrawView extends View {
 		touchedWhichEvent(x,y);
 		return super.onTouchEvent(event);
 	}
-	private void doDrawRect(Canvas canvas,Paint p,int i,Calendar calFrom,Calendar calTo){
-		for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-			calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-			calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
+	private void doDrawRect(Canvas canvas,Paint p,int i,Calendar calFrom,Calendar calTo,int realIndex){
+		for(int j=0 ; j<memberEventList.get(realIndex).eventInterval.size() ; j++){
+			calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(realIndex).eventInterval.get(j).getCalFrom()));
+			calTo.setTimeInMillis(Long.parseLong(memberEventList.get(realIndex).eventInterval.get(j).getCalTo()));
 			//Event interval starts before today
 			if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
 				//Event interval ends at today
