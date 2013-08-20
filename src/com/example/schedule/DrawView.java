@@ -283,45 +283,48 @@ public class DrawView extends View {
 				 doDrawRect(canvas , p , i%6 , calFrom , calTo,realIndex);
 				break;
 			default:
-				for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
-					calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
-					calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
-					if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							for(int k= 0; k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
+				break;
+			}
+		}
+		//Calculate common idle interval
+		for(int i=0;i<memberEventList.size();i++){
+			for(int j=0 ; j<memberEventList.get(i).eventInterval.size() ; j++){
+				calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalFrom()));
+				calTo.setTimeInMillis(Long.parseLong(memberEventList.get(i).eventInterval.get(j).getCalTo()));
+				if(calFrom.get(Calendar.DAY_OF_YEAR) < currentDayOfYear){
+					if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+						for(int k= 0; k < minutesDiff(calTo);k++){
+							isIdle[k] = 1;
 						}
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							for(int k= 0; k < 1440;k++){
-								isIdle[k] = 1;
-							}
-						}
-						else{
-						}
-						
 					}
-					//Event interval starts at today
-					else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-						//Event interval ends at today
-						if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
-							for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
-								isIdle[k] = 1;
-							}
+					else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
+						for(int k= 0; k < 1440;k++){
+							isIdle[k] = 1;
 						}
-						//Event interval ends after today
-						else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
-							for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
-								isIdle[k] = 1;
-							}
+					}
+					else{
+					}
+					
+				}
+				//Event interval starts at today
+				else if(calFrom.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+					//Event interval ends at today
+					if(calTo.get(Calendar.DAY_OF_YEAR) == currentDayOfYear){
+						for(int k= (int) minutesDiff(calFrom); k < minutesDiff(calTo);k++){
+							isIdle[k] = 1;
 						}
-						else{
+					}
+					//Event interval ends after today
+					else if(calTo.get(Calendar.DAY_OF_YEAR) > currentDayOfYear){
+						for(int k= (int) minutesDiff(calFrom); k < 1440 ;k++){
+							isIdle[k] = 1;
 						}
 					}
 					else{
 					}
 				}
-				break;
+				else{
+				}
 			}
 		}
 		p.reset();
@@ -363,6 +366,7 @@ public class DrawView extends View {
         canvas.restore(); 
         */
 	}
+	/*
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		// TODO Auto-generated method stub
@@ -371,6 +375,7 @@ public class DrawView extends View {
 		touchedWhichEvent(x,y);
 		return super.onTouchEvent(event);
 	}
+	*/
 	private void doDrawRect(Canvas canvas,Paint p,int i,Calendar calFrom,Calendar calTo,int realIndex){
 		for(int j=0 ; j<memberEventList.get(realIndex).eventInterval.size() ; j++){
 			calFrom.setTimeInMillis(Long.parseLong(memberEventList.get(realIndex).eventInterval.get(j).getCalFrom()));

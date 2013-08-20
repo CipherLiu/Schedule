@@ -26,22 +26,26 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class EventDetailActivity extends Activity {
+public class EventDetailActivity extends Activity implements  OnTouchListener, OnGestureListener{
 	private ImageView []profile=new ImageView[8];
-	private ImageButton previous;
-	private ImageButton next;
 	SyncImageLoader syncImageLoader; 
 	private String jsonStringFromFragment;
 	private ArrayList<String> profileUrl = new ArrayList();
@@ -60,12 +64,19 @@ public class EventDetailActivity extends Activity {
 	private int sixTupleNumber;
 	private int memberNumber;
 	
+	//Gestures
+	private static final int FLING_MIN_DISTANCE = 100;
+	//private static final int FLING_MIN_VELOCITY = 150;
+	GestureDetector mGestureDetector; 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_event_detail);
-		//Debug info
-		
+		//Gesture
+		mGestureDetector = new GestureDetector((OnGestureListener) this); 
+		RelativeLayout rootEventDetailLayout = (RelativeLayout)findViewById(R.id.root_event_detail); 
+		rootEventDetailLayout.setOnTouchListener(this); 
+		rootEventDetailLayout.setLongClickable(true); 
 		//Change title to display the group info
 		setTitle(getIntent().getStringExtra("groupNameToEventDetailActivity"));
 		/*
@@ -134,9 +145,6 @@ public class EventDetailActivity extends Activity {
 				profile[i].setBackgroundResource(0);
 			}
 		}
-		//For display the previous and next button
-		previous = (ImageButton)findViewById(R.id.previous_event_detail);
-		next = (ImageButton)findViewById(R.id.next_event_detail);
 		//Current day of year
 		currentCal = Calendar.getInstance();
 		currentDayOfYear = currentCal.get(Calendar.DAY_OF_YEAR);;
@@ -145,143 +153,159 @@ public class EventDetailActivity extends Activity {
 		//Send JSON data to DrawView
 		dr.setJSONData(jsonStringFromFragment);
 		dr.setBaseDay(currentDayOfYear);
-		previous.setOnClickListener(new ImageButton.OnClickListener(){
-
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				/*
-				//Re-draw
-				dayOffset--;
-				if(dayOffset < 0){
-					Toast alreadyToday = Toast.makeText(EventDetailActivity.this,
-						     "咩，已经今天了啊！", Toast.LENGTH_LONG);
-					alreadyToday.setGravity(Gravity.CENTER, 0, 0);
-					alreadyToday.show();
-					dayOffset=0;
-				}else{
-					dr.setSixTupleIndex(sixTupleIndex);
-					dr.setJSONData(paraListToDrawView.get(dayOffset));
-					dr.setBaseDay(currentDayOfYear+dayOffset);
-					dr.postInvalidate();
-				}
-				*/
-				if(memberNumber > 6){
-					sixTupleIndex--;
-					if(sixTupleIndex < 0){
-						Toast tip = Toast.makeText(EventDetailActivity.this,
-							     "咩，已经是前六个了啊！", Toast.LENGTH_LONG);
-						tip.setGravity(Gravity.CENTER, 0, 0);
-						tip.show();
-						//Flag holder
-						sixTupleIndex = 0;
-					}
-					else{
-						//Clean up
-						for(int i=1;i<=6;i++){
-							profile[i].setBackgroundResource(R.drawable.no_photo_small);
-							profile[i].setImageBitmap(null);
-						}
-						//New
-						for(int i = sixTupleIndex*6 ; i<(sixTupleIndex*6+6) ; i++){
-							if(!profileUrl.get(i).toString().equals("null")){
-								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
-							}
-						}
-						dr.setSixTupleIndex(sixTupleIndex);
-						dr.setJSONData(jsonStringFromFragment);
-						dr.setBaseDay(currentDayOfYear);
-						dr.postInvalidate();
-					}
-				}else{
-					Toast tip = Toast.makeText(EventDetailActivity.this,
-						     "咩，就这几个人！", Toast.LENGTH_LONG);
-					tip.setGravity(Gravity.CENTER, 0, 0);
-					tip.show();
-					sixTupleIndex=0;
-				}
-			}
-			
-		});
-		next.setOnClickListener(new ImageButton.OnClickListener(){
-
-			
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				/*
-				dayOffset++;
-				//Request new data
-				if(dayOffset == paraListToDrawView.size()){
-					Calendar requestCal = Calendar.getInstance();
-					requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
-					
-					requestCal.set(Calendar.HOUR_OF_DAY, 0);
-					requestCal.set(Calendar.MINUTE, 0);
-					requestCal.set(Calendar.SECOND, 0);
-					requestCal.set(Calendar.MILLISECOND,0);
-					
-					System.out.println("Current day of year:"+currentDayOfYear);
-					System.out.println("Days diff:"+(requestCal.get(Calendar.DAY_OF_YEAR)-currentDayOfYear));
-					
-					
-					new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
-				}
-				//Read from cached data
-				else{
-					dr.setSixTupleIndex(sixTupleIndex);
-					dr.setJSONData(paraListToDrawView.get(dayOffset));
-					dr.setBaseDay(currentDayOfYear+dayOffset);
-					dr.postInvalidate();
-				}
-				*/
-				sixTupleIndex++;
-				if(memberNumber > 6 && sixTupleIndex<=sixTupleNumber){
-					if(sixTupleIndex < sixTupleNumber){
-						//Clean up
-						for(int i=1;i<=6;i++){
-							profile[i].setBackgroundResource(R.drawable.no_photo_small);
-							profile[i].setImageBitmap(null);
-						}
-						//New profile
-						for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+6);i++){
-							if(!profileUrl.get(i).toString().equals("null")){
-								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
-							}
-						}
-						dr.setSixTupleIndex(sixTupleIndex);
-						dr.postInvalidate();
-					}else{
-						for(int i=1;i<=6;i++){
-							profile[i].setBackgroundResource(R.drawable.no_photo_small);
-							profile[i].setImageBitmap(null);
-						}
-						for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+memberNumber%6);i++){
-							if(!profileUrl.get(i).toString().equals("null")){
-								new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
-							}
-						}
-						for(int i = memberNumber%6+1 ; i<=6;i++){
-							profile[i].setBackgroundResource(0);
-						}
-						//String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":
-						//\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
-						dr.setSixTupleIndex(sixTupleIndex);
-						dr.setJSONData(jsonStringFromFragment);
-						dr.setBaseDay(currentDayOfYear);
-						dr.postInvalidate();
-					}
-
-				}else{
-					sixTupleIndex--;
-					Toast tip = Toast.makeText(EventDetailActivity.this,
-						     "咩，就这几个人！", Toast.LENGTH_LONG);
-					tip.setGravity(Gravity.CENTER, 0, 0);
-					tip.show();
-				}
-			}
-			
-		});
 	}
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		return mGestureDetector.onTouchEvent(event);
+	}
+	@Override
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY) {
+		/*
+		 * Gestures for movements
+		 * as follows
+		 * To left,to right,to up and to down gestures
+		 * respectively
+		 */
+		if  (e1.getX()-e2.getX() > FLING_MIN_DISTANCE 
+                /*&& Math.abs(velocityX) > FLING_MIN_VELOCITY*/)  {
+			
+			sixTupleIndex++;
+			if(memberNumber > 6 && sixTupleIndex<=sixTupleNumber){
+				if(sixTupleIndex < sixTupleNumber){
+					//Clean up
+					for(int i=1;i<=6;i++){
+						profile[i].setBackgroundResource(R.drawable.no_photo_small);
+						profile[i].setImageBitmap(null);
+					}
+					//New profile
+					for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+6);i++){
+						if(!profileUrl.get(i).toString().equals("null")){
+							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+						}
+					}
+					dr.setSixTupleIndex(sixTupleIndex);
+					dr.setJSONData(jsonStringFromFragment);
+					dr.setBaseDay(currentDayOfYear);
+					dr.postInvalidate();
+				}else{
+					for(int i=1;i<=6;i++){
+						profile[i].setBackgroundResource(R.drawable.no_photo_small);
+						profile[i].setImageBitmap(null);
+					}
+					for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+memberNumber%6);i++){
+						if(!profileUrl.get(i).toString().equals("null")){
+							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+						}
+					}
+					for(int i = memberNumber%6+1 ; i<=6;i++){
+						profile[i].setBackgroundResource(0);
+					}
+					//String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":
+					//\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
+					dr.setSixTupleIndex(sixTupleIndex);
+					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setBaseDay(currentDayOfYear+dayOffset);
+					dr.postInvalidate();
+				}
+
+			}else{
+				sixTupleIndex--;
+				Toast tip = Toast.makeText(EventDetailActivity.this,
+					     "咩，就这几个人！", Toast.LENGTH_LONG);
+				tip.setGravity(Gravity.CENTER, 0, 0);
+				tip.show();
+			}
+		     } 
+		if (e2.getX()-e1.getX() > FLING_MIN_DISTANCE 
+                /*&& Math.abs(velocityX) > FLING_MIN_VELOCITY*/) {   
+			if(memberNumber > 6){
+				sixTupleIndex--;
+				if(sixTupleIndex < 0){
+					Toast tip = Toast.makeText(EventDetailActivity.this,
+						     "咩，已经是前六个了啊！", Toast.LENGTH_LONG);
+					tip.setGravity(Gravity.CENTER, 0, 0);
+					tip.show();
+					//Flag holder
+					sixTupleIndex = 0;
+				}
+				else{
+					//Clean up
+					for(int i=1;i<=6;i++){
+						profile[i].setBackgroundResource(R.drawable.no_photo_small);
+						profile[i].setImageBitmap(null);
+					}
+					//New
+					for(int i = sixTupleIndex*6 ; i<(sixTupleIndex*6+6) ; i++){
+						if(!profileUrl.get(i).toString().equals("null")){
+							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+						}
+					}
+					dr.setSixTupleIndex(sixTupleIndex);
+					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setBaseDay(currentDayOfYear+dayOffset);
+					dr.postInvalidate();
+				}
+			}else{
+				Toast tip = Toast.makeText(EventDetailActivity.this,
+					     "咩，就这几个人！", Toast.LENGTH_LONG);
+				tip.setGravity(Gravity.CENTER, 0, 0);
+				tip.show();
+				sixTupleIndex=0;
+			}
+		} 
+		if  (e1.getY()-e2.getY() > FLING_MIN_DISTANCE 
+                /*&& Math.abs(velocityY) > FLING_MIN_VELOCITY*/)  {   
+			dayOffset++;
+			//Request new data
+			if(dayOffset == paraListToDrawView.size()){
+				Calendar requestCal = Calendar.getInstance();
+				requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
+				
+				requestCal.set(Calendar.HOUR_OF_DAY, 0);
+				requestCal.set(Calendar.MINUTE, 0);
+				requestCal.set(Calendar.SECOND, 0);
+				requestCal.set(Calendar.MILLISECOND,0);
+				new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
+			}
+			//Read from cached data
+			else{
+				dr.setSixTupleIndex(sixTupleIndex);
+				dr.setJSONData(paraListToDrawView.get(dayOffset));
+				dr.setBaseDay(currentDayOfYear+dayOffset);
+				dr.postInvalidate();
+			}
+		} 
+		if (e2.getY()-e1.getY() > FLING_MIN_DISTANCE 
+                /*&& Math.abs(velocityY) > FLING_MIN_VELOCITY*/) {  
+			//Re-draw
+			dayOffset--;
+			if(dayOffset < 0){
+				Toast alreadyToday = Toast.makeText(EventDetailActivity.this,
+					     "咩，已经今天了啊！", Toast.LENGTH_LONG);
+				alreadyToday.setGravity(Gravity.CENTER, 0, 0);
+				alreadyToday.show();
+				dayOffset=0;
+			}else{
+				dr.setSixTupleIndex(sixTupleIndex);
+				dr.setJSONData(paraListToDrawView.get(dayOffset));
+				dr.setBaseDay(currentDayOfYear+dayOffset);
+				dr.postInvalidate();
+			}
+		}  
+		return false;    
+	}
+	@Override
+	public void onLongPress(MotionEvent e) {}
+	@Override
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,float distanceY) {return false;}
+	@Override
+	public void onShowPress(MotionEvent e) {}
+	@Override
+	public boolean onSingleTapUp(MotionEvent e) {return false;}
+	
+	@Override
+	public boolean onDown(MotionEvent e) {return false;}
 	/*
 	 * Async task
 	 */
