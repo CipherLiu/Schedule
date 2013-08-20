@@ -9,22 +9,25 @@
     tools:context=".EventDetailActivity" 
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <com.example.schedule.DrawView
-        android:id="@+id/drawView_event_detail"
-        android:layout_width="wrap_content"
-        android:layout_height="350dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="0dp"
-        android:layout_marginTop="0dp"
-        android:paddingLeft="0dp"
-        android:paddingTop="0dp" />
-
+    <LinearLayout 
+        android:id="@+id/root_drawView_event_detail"
+        android:layout_width="match_parent"
+    	android:layout_height="350dp"
+        >
+	    <com.example.schedule.DrawView
+	        android:id="@+id/drawView_event_detail"
+	        android:layout_width="wrap_content"
+	        android:layout_height="match_parent"
+	        android:layout_marginLeft="0dp"
+	        android:layout_marginTop="0dp"
+	        android:paddingLeft="0dp"
+	        android:paddingTop="0dp" />
+	</LinearLayout>
     <ImageView
         android:id="@+id/profile1_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="53dp"
         android:layout_toRightOf="@+id/root_event_detail"
         android:paddingLeft="0dp" />
@@ -33,7 +36,7 @@
         android:id="@+id/profile2_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="15dp"
         android:layout_toRightOf="@+id/profile1_event_detail"
         android:paddingLeft="0dp" />
@@ -42,7 +45,7 @@
         android:id="@+id/profile3_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="55dp"
         android:layout_toRightOf="@+id/profile1_event_detail"
         android:paddingLeft="0dp" />
@@ -51,7 +54,7 @@
         android:id="@+id/profile4_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="95dp"
         android:layout_toRightOf="@+id/profile1_event_detail"
         android:paddingLeft="0dp" />
@@ -60,7 +63,7 @@
         android:id="@+id/profile5_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="135dp"
         android:layout_toRightOf="@+id/profile1_event_detail"
         android:paddingLeft="0dp" />
@@ -69,7 +72,7 @@
         android:id="@+id/profile6_event_detail"
         android:layout_width="25dp"
         android:layout_height="25dp"
-        android:layout_below="@+id/drawView_event_detail"
+        android:layout_below="@+id/root_drawView_event_detail"
         android:layout_marginLeft="175dp"
         android:layout_toRightOf="@+id/profile1_event_detail"
         android:paddingLeft="0dp" />

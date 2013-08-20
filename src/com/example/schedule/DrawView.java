@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -28,6 +29,7 @@ import android.graphics.PathEffect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -51,6 +53,7 @@ public class DrawView extends View {
 	//Event rect area width
 	private int axisxOffsetPerEvent = 40;
 	private String JSONData;
+	private int baseDay;
 	//Calculating if a all-day event
 	private int currentDayOfYear;
 	private Calendar currentTime;
@@ -115,6 +118,12 @@ public class DrawView extends View {
 	public void setJSONData(String JSONData) {
 		this.JSONData = JSONData;
 	}
+	public int getBaseDay() {
+		return baseDay;
+	}
+	public void setBaseDay(int baseDay) {
+		this.baseDay = baseDay;
+	}
 	/*
 	 * Attention please!!!
 	 * Constructor for using DrawView successfully in layout XML file
@@ -130,13 +139,24 @@ public class DrawView extends View {
 
 		super( context, attrs, defStyle );
 	}
-	protected void onDraw(Canvas canvas) {
+	@Override
+	public void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		System.out.println("In onDraw:"+getJSONData());
+		JSONData = getJSONData();
+		baseDay = getBaseDay();
+		System.out.println("Current day of year(in drawview)"+baseDay);
+		/*
+		 * Clear dirt data
+		 */
+		if(memberEventList.size()!=0){
+			memberEventList.clear();
+		}
+		for(int i=0 ; i<=1440 ; i++){
+			isIdle[i]=0;
+		}
 		/*
 		 * 	Parse JSON data
 		 */
-		JSONData = getJSONData();
 		try {
 			JSONObject joOrigionString = new JSONObject(JSONData);
 			
@@ -156,7 +176,6 @@ public class DrawView extends View {
 				memberEvent.setMember(joMember.getString("memberId"));
 				//Get eventArray array
 				jaEventArray = joMember.getJSONArray("eventArray");
-				
 				for(int j=0 ; j < jaEventArray.length() ; j++){
 					joEvent = (JSONObject) jaEventArray.get(j);
 					//As follows
@@ -173,6 +192,7 @@ public class DrawView extends View {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		
 		// Create Paint Object and draw for a pair of axis
 		Paint p = new Paint();
 		p.setColor(Color.RED);
@@ -216,8 +236,7 @@ public class DrawView extends View {
         /*
          * Current params
          */
-        currentTime = Calendar.getInstance();
-        currentDayOfYear = currentTime.get(Calendar.DAY_OF_YEAR);
+        currentDayOfYear = baseDay;
         
         Calendar calFrom = Calendar.getInstance();
         Calendar calTo = Calendar.getInstance();
@@ -436,6 +455,7 @@ public class DrawView extends View {
 	}
 	private long minutesDiff(Calendar minuteToCalculate){
         todayMinStart = Calendar.getInstance();
+        todayMinStart.set(Calendar.DAY_OF_YEAR, baseDay);
         todayMinStart.set(Calendar.HOUR_OF_DAY, 0);
         todayMinStart.set(Calendar.MINUTE, 0);
         todayMinStart.set(Calendar.SECOND, 0);

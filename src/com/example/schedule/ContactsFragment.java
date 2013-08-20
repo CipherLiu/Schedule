@@ -335,11 +335,10 @@ public class ContactsFragment extends Fragment{
 						String urlParams = "?"+query;
 						
 						HttpGet httpget = new HttpGet(group_social_url+urlParams);
-						System.out.println("Get url"+group_social_url+urlParams);
 						HttpResponse httpResponse = httpClient.execute(httpget);
 						int result;
 						if(httpResponse.getStatusLine().getStatusCode() == 200){
-							paraToEventDetailActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8");  
+							paraToEventDetailActivity = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8"); 
 							JSONObject resultJSON = new JSONObject(paraToEventDetailActivity);
 							result = resultJSON.getInt("result");
 						}else{
@@ -382,6 +381,7 @@ public class ContactsFragment extends Fragment{
         	intent.putExtra("groupIdToEventDetailActivity",groupIdToEventDetailActivity);
         	intent.putExtra("groupNameToEventDetailActivity", groupNameToEventDetailActivity);
         	intent.putExtra("paraToEventDetailActivity", paraToEventDetailActivity);
+        	System.out.println("Before start activity:"+paraToEventDetailActivity);
         	ContactsFragment.this.startActivity(intent);
 				break;
 			default:

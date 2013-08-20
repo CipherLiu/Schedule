@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -33,6 +34,7 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,12 +49,19 @@ public class EventDetailActivity extends Activity {
 	private String groupId;
 	private static String url = Global.BASICURL+"MemberAddCheck";
 	private String paraToNewFriendsToGroupActivity;
+	private String anotherDayJsonString;
+	private ArrayList<String> paraListToDrawView = new ArrayList();
+	private DrawView dr;
+	private static int dayOffset = 0;
+	private static String group_social_url = Global.BASICURL+"GroupSocial";
+	private int currentDayOfYear;
+	private Calendar currentCal;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_event_detail);
 		//Debug info
-		//System.out.println(getIntent().getStringExtra("whichGroup"));
+		
 		//Change title to display the group info
 		setTitle(getIntent().getStringExtra("groupNameToEventDetailActivity"));
 		/*
@@ -62,6 +71,7 @@ public class EventDetailActivity extends Activity {
 		groupId = getIntent().getStringExtra("groupIdToEventDetailActivity");
 		//Get JSON data
 		jsonStringFromFragment = getIntent().getStringExtra("paraToEventDetailActivity");
+		paraListToDrawView.add(jsonStringFromFragment);
 		//Find ImageView
 		profile[1]=(ImageView) findViewById(R.id.profile1_event_detail);
 		profile[2]=(ImageView) findViewById(R.id.profile2_event_detail);
@@ -114,17 +124,37 @@ public class EventDetailActivity extends Activity {
 		//For display the previous and next button
 		previous = (ImageButton)findViewById(R.id.previous_event_detail);
 		next = (ImageButton)findViewById(R.id.next_event_detail);
+		//Current day of year
+		currentCal = Calendar.getInstance();
+		currentDayOfYear = currentCal.get(Calendar.DAY_OF_YEAR);;
+		System.out.println("Current day of year(in activity)"+currentDayOfYear);
 		//View
-		DrawView dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
+		dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
 		//Send JSON data to DrawView
-		dr.setJSONData(jsonStringFromFragment);
+		String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
+		dr.setJSONData(str);
+		dr.setBaseDay(currentDayOfYear);
 		previous.setOnClickListener(new ImageButton.OnClickListener(){
 
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				//System.out.println("Previous touched");
-				
+				//Re-draw
+				dayOffset--;
+				if(dayOffset < 0){
+					Toast alreadyToday = Toast.makeText(EventDetailActivity.this,
+						     "咩，已经今天了啊！", Toast.LENGTH_LONG);
+					alreadyToday.setGravity(Gravity.CENTER, 0, 0);
+					alreadyToday.show();
+					dayOffset=0;
+				}else{
+					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setBaseDay(currentDayOfYear+dayOffset);
+					dr.postInvalidate();
+				}
+				//dr.setJSONData(jsonStringFromFragment);
+				//dr.postInvalidate();
+				System.out.println("In Previous,dayOffset is "+dayOffset);
 			}
 			
 		});
@@ -133,7 +163,31 @@ public class EventDetailActivity extends Activity {
 			
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				//System.out.println("Next touched");
+				dayOffset++;
+				//Request new data
+				if(dayOffset == paraListToDrawView.size()){
+					Calendar requestCal = Calendar.getInstance();
+					requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
+					
+					requestCal.set(Calendar.HOUR_OF_DAY, 0);
+					requestCal.set(Calendar.MINUTE, 0);
+					requestCal.set(Calendar.SECOND, 0);
+					requestCal.set(Calendar.MILLISECOND,0);
+					
+					System.out.println("Current day of year:"+currentDayOfYear);
+					System.out.println("Days diff:"+(requestCal.get(Calendar.DAY_OF_YEAR)-currentDayOfYear));
+					
+					
+					new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
+				}
+				//Read from cached data
+				else{
+					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setBaseDay(currentDayOfYear+dayOffset);
+					System.out.println("In next,json data is:"+paraListToDrawView.get(dayOffset));
+					dr.postInvalidate();
+				}
+				System.out.println("In Next,dayOffset is "+dayOffset);
 			}
 			
 		});
@@ -141,6 +195,86 @@ public class EventDetailActivity extends Activity {
 	/*
 	 * Async task
 	 */
+	class GetDrawDataAT extends AsyncTask<String,Integer,Integer>{
+
+		@Override
+		protected Integer doInBackground(String... params) {
+			// TODO Auto-generated method stub
+				if(!params[0].isEmpty()){
+					
+					try{
+						HttpClient httpClient = new DefaultHttpClient();
+						String query = URLEncoder.encode("userId", "utf-8");
+						query += "=";
+						query += URLEncoder.encode(params[0], "utf-8");
+						query += "&";
+						query += URLEncoder.encode("groupId","utf-8");
+						query += "=";
+						query += URLEncoder.encode(params[1],"utf-8");
+						query += "&";
+						query += URLEncoder.encode("dateTimeInMillis","utf-8");
+						query += "=";
+						query += URLEncoder.encode(params[2],"utf-8");
+						
+						String urlParams = "?"+query;
+						
+						HttpGet httpget = new HttpGet(group_social_url+urlParams);
+						HttpResponse httpResponse = httpClient.execute(httpget);
+						int result;
+						if(httpResponse.getStatusLine().getStatusCode() == 200){
+							anotherDayJsonString = new String(EntityUtils.toByteArray(httpResponse.getEntity()),"UTF-8"); 
+							JSONObject resultJSON = new JSONObject(anotherDayJsonString);
+							result = resultJSON.getInt("result");
+						}else{
+							return Primitive.CONNECTIONREFUSED;
+						}
+						if (httpClient != null) {
+							httpClient.getConnectionManager().shutdown();
+						}
+						return result;
+					}catch(HttpHostConnectException e){
+						e.printStackTrace();
+						return Primitive.CONNECTIONREFUSED;
+					}catch (Exception e) {
+						e.printStackTrace();
+						return -1;
+					}
+			}else{
+				return -1;
+			}
+			
+		}
+
+		@Override
+		protected void onPostExecute(Integer result) {
+			// TODO Auto-generated method stub
+			switch(result){
+			case Primitive.CONNECTIONREFUSED:
+				Toast connectError = Toast.makeText(EventDetailActivity.this,
+					     "Cannot connect to the server", Toast.LENGTH_LONG);
+				connectError.setGravity(Gravity.CENTER, 0, 0);
+				connectError.show();
+				break;
+			case Primitive.ACCEPT:
+				//New add to paraListToDrawView
+				paraListToDrawView.add(anotherDayJsonString);
+				System.out.println("paraListToDrawView's size is:"+paraListToDrawView.size());
+				//Re-draw
+				System.out.println("Gotted new data is:"+anotherDayJsonString);
+				dr.setJSONData(anotherDayJsonString);
+				dr.setBaseDay(currentDayOfYear+dayOffset);
+				dr.postInvalidate();
+				break;
+			default:
+				break;
+			}
+		}
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+		}
+	}
 	public class FillUserProfileAT extends AsyncTask<String ,Integer, Bitmap>{  
 	      
 	    private ImageView imageView;   
