@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android = "http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:descendantFocusability="blocksDescendants">
+    <ImageView 
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/iv_comment_list_item_publisher_image"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"/>
+    <TextView 
+        android:layout_toRightOf="@+id/iv_comment_list_item_publisher_image"
+        android:layout_alignParentTop="true"
+        android:id="@+id/tv_comment_list_item_publisher_name"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textColor="#051090"
+        android:textStyle="bold"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"/>
+    <TextView
+        android:layout_toRightOf="@+id/iv_comment_list_item_publisher_image"
+        android:layout_below="@+id/tv_comment_list_item_publisher_name"
+        android:id="@+id/tv_comment_list_item_publish_time"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textSize="12sp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"/>
+    <TextView
+        android:layout_toRightOf="@+id/iv_comment_list_item_publisher_image"
+        android:layout_below="@+id/tv_comment_list_item_publish_time"
+        android:id="@+id/tv_comment_list_item_content"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"/>
+    <ImageButton 
+        android:id="@+id/btn_comment_list_item_reply"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="5dp"
+        android:src="@drawable/comment_reply"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"/>
+</RelativeLayout>

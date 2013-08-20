@@ -4,7 +4,7 @@
        android:layout_height="wrap_content"
        android:background="@+drawable/page_bg"
        android:layout_marginTop="5dp" >
-
+<!--  
         <ImageView
            android:id="@+id/iv_user_image"
            android:layout_width="50dp"
@@ -46,4 +46,5 @@
            android:text=" 12-03-04 11:52"
            android:textColor="#ffffff"
            android:textSize="12sp" />
+           -->
     </RelativeLayout>

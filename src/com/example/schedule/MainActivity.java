@@ -65,30 +65,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private SocialFragment whatsNewFragment = new SocialFragment();
 	private ContactsFragment groupFragment = new ContactsFragment();
 	private ProgressDialog progressDialog;
-    
-//    public ArrayList<GroupInfo> getGroupList() {
-//		return groupList;
-//	}
-//
-//    public String getGroupListString(){
-//    	JSONArray jsonArray = new JSONArray();
-//    	for(int i = 0; i < groupList.size(); i++){
-//    		JSONObject jObject = new JSONObject();
-//    		try {
-//				jObject.put("id", groupList.get(i).getId());
-//				jObject.put("name", groupList.get(i).getName());
-//				jsonArray.put(jObject);
-//			} catch (JSONException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//    	}
-//    	return jsonArray.toString();
-//    }
-//    
-//	public void setGroupList(ArrayList<GroupInfo> groupList) {
-//		this.groupList = groupList;
-//	}
 
 	public String getEmail() {
 		return email;
@@ -183,8 +159,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				newEventIntent.putExtra("year", calSelected.get(Calendar.YEAR));
 				newEventIntent.putExtra("month", calSelected.get(Calendar.MONTH));
 				newEventIntent.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
-//				newEventIntent.putExtra("hourOfDay", calSelected.get(Calendar.HOUR_OF_DAY));
-//				newEventIntent.putExtra("minute", calSelected.get(Calendar.MINUTE));
 				newEventIntent.putExtra("hourOfDay", Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
 				newEventIntent.putExtra("minute", Calendar.getInstance().get(Calendar.MINUTE));
 				newEventIntent.putExtra("userEmail", email);
@@ -332,6 +306,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             	return myScheduleFragment;
             case 1:
             	//Fragment whatsNewFragment = new WhatsNewFragment();
+            	Bundle bubdleToSocial = new Bundle();
+            	bubdleToSocial.putString("socialEventArrayString", socialEventArrayString);
+            	bubdleToSocial.putString("userId", userId);
+            	whatsNewFragment.setArguments(bubdleToSocial);
             	return whatsNewFragment;
             case 2:
             	//Fragment groupFragment = new GroupFragment();

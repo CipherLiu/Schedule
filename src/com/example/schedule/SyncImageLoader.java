@@ -143,7 +143,7 @@ public class SyncImageLoader {
 			if(!folder.exists()){
 				folder.mkdir();
 			}
-			File f = new File(FileUrl+fileName+".jpg");
+			File f = new File(FileUrl+fileName);
 			//SD卡中是否有该文件，有则直接读取返回
 			if(f.exists()){
 				FileInputStream fis = new FileInputStream(f);

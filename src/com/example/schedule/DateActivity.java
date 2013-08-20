@@ -70,9 +70,11 @@ public class DateActivity extends Activity {
 	private JSONArray eventArray;
 	private Calendar calendar =  Calendar.getInstance();
 	private String userId;
+	private String publisherId;
 	private ProgressDialog progressDialog;
 	private String groupListString;
-	
+	private EventItemAdapter eventAdapter;
+	private String fromActivity;
 	public DateActivity(){
 		
 	}
@@ -82,12 +84,15 @@ public class DateActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		this.setContentView(R.layout.activity_date);
 		Intent gainIntent = getIntent(); 
-		String date =gainIntent.getIntExtra("year",1990) + "-" 
-				+ gainIntent.getIntExtra("month",5) + "-" 
-				+ gainIntent.getIntExtra("dayOfMonth",10);
 		calendar.setTimeInMillis(gainIntent.getLongExtra("calendar", 0));
+		String date = titleDateFormat(calendar.getTime());
 		userId = gainIntent.getStringExtra("userId");
-		groupListString = gainIntent.getStringExtra("groupListString");
+		publisherId = gainIntent.getStringExtra("publisherId");
+		
+		fromActivity = gainIntent.getStringExtra("fromActivity");
+		if(fromActivity.contentEquals("MainActivity")){
+			groupListString = gainIntent.getStringExtra("groupListString");
+		}
 		try {
 			eventArray =  new JSONArray(gainIntent.getStringExtra("eventArray"));
 		} catch (JSONException e) {
@@ -106,7 +111,22 @@ public class DateActivity extends Activity {
 				JSONObject eventObject;
 				try {
 					eventObject = (JSONObject)eventArray.get(position);
-					String eventId = eventObject.getString("_id");
+					EventInfo selectedEvent = getEventInfoFromJSON(eventObject);
+					Intent toEventActivity = new Intent();
+					toEventActivity.putExtra("eventId", selectedEvent.getEventId());
+					toEventActivity.putExtra("calFrom", selectedEvent.getCalFrom().getTimeInMillis());
+					toEventActivity.putExtra("calTo", selectedEvent.getCalTo().getTimeInMillis());
+					toEventActivity.putExtra("eventName", selectedEvent.getEventName());
+					toEventActivity.putExtra("eventContent", selectedEvent.getDescription());
+					toEventActivity.putExtra("photo", selectedEvent.getPhoto());
+					toEventActivity.putExtra("record", selectedEvent.getRecord());
+					toEventActivity.putExtra("userId", userId);
+					toEventActivity.putExtra("commentCount", selectedEvent.getCommentCount());
+					toEventActivity.putExtra("commentsString", selectedEvent.getCommentsString());
+					toEventActivity.putExtra("publisherId", publisherId);
+					toEventActivity.putExtra("position", position);
+					toEventActivity.setClass(DateActivity.this, EventActivity.class);
+					DateActivity.this.startActivityForResult(toEventActivity , 2);
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -134,7 +154,7 @@ public class DateActivity extends Activity {
 			}
 			
 		});
-		EventItemAdapter eventAdapter = new EventItemAdapter(this,dateListView);
+		eventAdapter = new EventItemAdapter(this,dateListView);
 		for(int i = 0 ; i < eventArray.length() ; i++){
     		try {
 				JSONObject eventObject = (JSONObject)eventArray.get(i);
@@ -147,34 +167,35 @@ public class DateActivity extends Activity {
 		dateListView.setAdapter(eventAdapter);
 	}
 
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
-		MenuInflater inflater = getMenuInflater();     
-	    inflater.inflate(R.menu.activity_date, menu);
-	    MenuItem miNewEvent = (MenuItem)menu.findItem(R.id.menu_new_event_date);
-	    miNewEvent.setOnMenuItemClickListener(new OnMenuItemClickListener(){
+		if(fromActivity.contentEquals("MainActivity")){
+			MenuInflater inflater = getMenuInflater();     
+		    inflater.inflate(R.menu.activity_date, menu);
+		    MenuItem miNewEvent = (MenuItem)menu.findItem(R.id.menu_new_event_date);
+		    miNewEvent.setOnMenuItemClickListener(new OnMenuItemClickListener(){
 
-			public boolean onMenuItemClick(MenuItem item) {
-				// TODO Auto-generated method stub
-				Intent newEventIntent = new Intent();
-				newEventIntent.putExtra("year", calendar.get(Calendar.YEAR));
-				newEventIntent.putExtra("month", calendar.get(Calendar.MONTH));
-				newEventIntent.putExtra("dayOfMonth", calendar.get(Calendar.DAY_OF_MONTH));
-//				newEventIntent.putExtra("hourOfDay", calSelected.get(Calendar.HOUR_OF_DAY));
-//				newEventIntent.putExtra("minute", calSelected.get(Calendar.MINUTE));
-				newEventIntent.putExtra("hourOfDay", Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-				newEventIntent.putExtra("minute", Calendar.getInstance().get(Calendar.MINUTE));
-				newEventIntent.putExtra("userId", userId);
-				newEventIntent.putExtra("from", "DateActivity");
-				newEventIntent.putExtra("groupListString",groupListString);
-				newEventIntent.putExtra("calendar",calendar.getTimeInMillis());
-				newEventIntent.setClass(DateActivity.this, NewEventActivity.class);
-				startActivityForResult(newEventIntent , 1);
-				return true;
-			}
-	    });
-	    return true;
+				public boolean onMenuItemClick(MenuItem item) {
+					// TODO Auto-generated method stub
+					Intent newEventIntent = new Intent();
+					newEventIntent.putExtra("year", calendar.get(Calendar.YEAR));
+					newEventIntent.putExtra("month", calendar.get(Calendar.MONTH));
+					newEventIntent.putExtra("dayOfMonth", calendar.get(Calendar.DAY_OF_MONTH));
+					newEventIntent.putExtra("hourOfDay", Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+					newEventIntent.putExtra("minute", Calendar.getInstance().get(Calendar.MINUTE));
+					newEventIntent.putExtra("userId", userId);
+					newEventIntent.putExtra("from", "DateActivity");
+					newEventIntent.putExtra("groupListString",groupListString);
+					newEventIntent.putExtra("calendar",calendar.getTimeInMillis());
+					newEventIntent.setClass(DateActivity.this, NewEventActivity.class);
+					startActivityForResult(newEventIntent , 1);
+					return true;
+				}
+		    });
+		}
+		return true;
 	}
 	
 	@Override
@@ -196,6 +217,58 @@ public class DateActivity extends Activity {
 		    	}
 				dateListView.setAdapter(eventAdapter);
 				eventAdapter.notifyDataSetChanged();				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}else if(requestCode == 2 && resultCode == 1){
+			Bundle extras = data.getExtras();
+			String commentsArrayString = extras.getString("commentsArrayString");
+			int position = extras.getInt("position");
+			int commentCount = extras.getInt("commentCount");
+			try {
+				JSONArray commentsArray = new JSONArray(commentsArrayString);
+				JSONArray eventArrayNew = new JSONArray();
+				for(int i = 0; i < eventArray.length(); i++){
+					if(i==position){
+						JSONObject eventJSONObject = new JSONObject();
+						eventJSONObject.put("_id", eventArray.getJSONObject(i).get("_id"));
+						eventJSONObject.put("eventName", 
+								eventArray.getJSONObject(i).get("eventName"));
+						long calFrom = (Long)eventArray.getJSONObject(i).get("calFrom");
+						eventJSONObject.put("calFrom", calFrom);
+						long calTo = (Long)eventArray.getJSONObject(i).get("calTo");
+						eventJSONObject.put("calTo", calTo);
+						eventJSONObject.put("locationName", 
+								eventArray.getJSONObject(i).get("locationName"));
+						eventJSONObject.put("locationCoordinate", 
+								eventArray.getJSONObject(i).get("locationCoordinate"));
+						eventJSONObject.put("decription", 
+								eventArray.getJSONObject(i).get("decription"));
+						eventJSONObject.put("photo", 
+								eventArray.getJSONObject(i).get("photo"));
+						eventJSONObject.put("record", 
+								eventArray.getJSONObject(i).get("record"));
+						//increase the commentCount
+						eventJSONObject.put("commentCount", commentCount);
+						eventJSONObject.put("updateTime", 
+								eventArray.getJSONObject(i).get("updateTime"));
+						eventJSONObject.put("publisherId", 
+								eventArray.getJSONObject(i).get("publisherId"));
+						eventJSONObject.put("publisherName", 
+								eventArray.getJSONObject(i).get("publisherName"));	
+						eventJSONObject.put("publisherImage", 
+								eventArray.getJSONObject(i).get("publisherImage"));
+						//update the commentArrayString 
+						eventJSONObject.put("commentsString", commentsArray.toString());
+						eventArrayNew.put(eventJSONObject);
+					}else{
+						eventArrayNew.put(eventArray.get(i));
+					}
+				}
+				eventAdapter.addEventFromJSONArray(eventArrayNew);
+				eventAdapter.notifyDataSetChanged();
+				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -227,6 +300,8 @@ public class DateActivity extends Activity {
 			String locationName = eventObject.getString("locationName");
 			String photo = eventObject.getString("photo");
 			String record = eventObject.getString("record");
+			int commentCount = eventObject.getInt("commentCount");
+			String commentsString = eventObject.getString("commentsString");
 			event.setCalFrom(calFrom);
 			event.setCalTo(calTo);
 			event.setEventName(eventName);
@@ -235,6 +310,8 @@ public class DateActivity extends Activity {
 			event.setPhoto(photo);
 			event.setRecord(record);
 			event.setLocationName(locationName);
+			event.setCommentCount(commentCount);
+			event.setCommentsString(commentsString);
 			return event;
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -246,6 +323,11 @@ public class DateActivity extends Activity {
 	private String dateFormat(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
         		"yyyy.MM.dd HH:mm");
+        return dateFormat.format(date);
+    }
+	private String titleDateFormat(Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+        		"yyyy-MM-dd");
         return dateFormat.format(date);
     }
 	
@@ -370,20 +452,16 @@ public class DateActivity extends Activity {
         public EventItemAdapter(Context context, ListView listView) {  
             mInflater = LayoutInflater.from(context);  
             syncImageLoader = new SyncImageLoader();  
-            mListView = listView;  
-              
+            mListView = listView;            
             /* 
-             * 
-             * 这一句话取消掉注释的话，那么能更加的节省资源，不过体验稍微有点， 
-             * 你滑动的时候不会读取图片，当手放开后才开始度图片速度更快，你们可以试一试 
+             * download while not scrolling
              * */  
-              
             // mListView.setOnScrollListener(onScrollListener);  
         }  
   
         public void addEvent(String eventName, String eventContent, 
         		Calendar calFrom , Calendar calTo , String locationName,
-        		String record,String photo) {  
+        		String record,String photo,int commentCount, String commentsString) {  
             EventInfo event = new EventInfo();  
             event.setEventName(eventName);
             event.setDescription(eventContent);
@@ -392,6 +470,8 @@ public class DateActivity extends Activity {
             event.setLocationName(locationName);
             event.setRecord(record);
             event.setPhoto(photo);
+            event.setCommentCount(commentCount);
+            event.setCommentsString(commentsString);
             mEvents.add(event);  
         }  
   
@@ -404,6 +484,52 @@ public class DateActivity extends Activity {
         	for(int i = 0; i < events.size(); i++)
         		mEvents.add(events.get(i));
         }
+        public void addEventFromJSONArray(JSONArray eventsJSONArray){
+        	mEvents.clear();
+        	for(int i = 0; i < eventsJSONArray.length(); i++)
+				try {
+					addEvent(getEventInfoFromJSON(eventsJSONArray.getJSONObject(i)));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        }
+        
+        private EventInfo getEventInfoFromJSON(JSONObject eventObject){
+    		EventInfo event = new EventInfo();
+    		try {
+    			long fromTimeMillis = eventObject.getLong("calFrom");
+    			long toTimeMillis = eventObject.getLong("calTo");
+    			Calendar calFrom = Calendar.getInstance();
+    			calFrom.setTimeInMillis(fromTimeMillis);
+    			Calendar calTo = Calendar.getInstance();
+    			calTo.setTimeInMillis(toTimeMillis);
+    			String eventId = eventObject.getString("_id");
+    			String eventName = eventObject.getString("eventName");
+    			String eventContent = eventObject.getString("decription");
+    			String locationName = eventObject.getString("locationName");
+    			String photo = eventObject.getString("photo");
+    			String record = eventObject.getString("record");
+    			int commentCount = eventObject.getInt("commentCount");
+    			String commentsString = eventObject.getString("commentsString");
+    			event.setCalFrom(calFrom);
+    			event.setCalTo(calTo);
+    			event.setEventName(eventName);
+    			event.setEventId(eventId);
+    			event.setDescription(eventContent);
+    			event.setPhoto(photo);
+    			event.setRecord(record);
+    			event.setLocationName(locationName);
+    			event.setCommentCount(commentCount);
+    			event.setCommentsString(commentsString);
+    			return event;
+    		} catch (JSONException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    		return null;
+    	}
+        
         public void clean() {  
             mEvents.clear();  
         }  
@@ -426,11 +552,13 @@ public class DateActivity extends Activity {
         }  
   
         public View getView(int position, View convertView, ViewGroup parent) {  
-            if (convertView == null) {  
+            System.out.println("getView");
+        	if (convertView == null) {  
                 convertView = mInflater.inflate(R.layout.list_item_date,  
                         null);  
-            }  
-            final EventInfo event = mEvents.get(position);  
+            } 
+            final int positionInArray = position;
+            final EventInfo selectedEvent = mEvents.get(position);  
             convertView.setTag(position);  
             ImageView ivEventPhoto = (ImageView) convertView.findViewById(
             		R.id.iv_date_list_item_event_photo);
@@ -446,39 +574,45 @@ public class DateActivity extends Activity {
             		R.id.btn_date_list_item_event_record_play);
             Button commentsButton = (Button)convertView.findViewById(
             		R.id.btn_date_list_item_event_comment);
+            commentsButton.setText(DateActivity.this.getResources().
+            		getString(R.string.comments)+"("+selectedEvent.getCommentCount()+")");
             commentsButton.setOnClickListener(new OnClickListener(){
 
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
 					Intent toEventActivity = new Intent();
-					toEventActivity.putExtra("eventId", event.getEventId());
-					toEventActivity.putExtra("calFrom", event.getCalFrom().getTimeInMillis());
-					toEventActivity.putExtra("calTo", event.getCalTo().getTimeInMillis());
-					toEventActivity.putExtra("eventName", event.getEventName());
-					toEventActivity.putExtra("eventContent", event.getDescription());
-					toEventActivity.putExtra("photo", event.getPhoto());
-					toEventActivity.putExtra("record", event.getRecord());
+					toEventActivity.putExtra("eventId", selectedEvent.getEventId());
+					toEventActivity.putExtra("calFrom", selectedEvent.getCalFrom().getTimeInMillis());
+					toEventActivity.putExtra("calTo", selectedEvent.getCalTo().getTimeInMillis());
+					toEventActivity.putExtra("eventName", selectedEvent.getEventName());
+					toEventActivity.putExtra("eventContent", selectedEvent.getDescription());
+					toEventActivity.putExtra("photo", selectedEvent.getPhoto());
+					toEventActivity.putExtra("record", selectedEvent.getRecord());
+					toEventActivity.putExtra("userId", userId);
+					toEventActivity.putExtra("commentCount", selectedEvent.getCommentCount());
+					toEventActivity.putExtra("commentsString", selectedEvent.getCommentsString());
+					toEventActivity.putExtra("publisherId", publisherId);
+					toEventActivity.putExtra("position", positionInArray);
 					toEventActivity.setClass(DateActivity.this, EventActivity.class);
-					DateActivity.this.startActivity(toEventActivity);
+					DateActivity.this.startActivityForResult(toEventActivity , 2);
 				}
             	
             });
-            if(!event.getRecord().contentEquals("null")){
+            if(!selectedEvent.getRecord().contentEquals("null")){
             	iBtnRecordPaly.setVisibility(View.VISIBLE);
-            	RecordPlayClickListener listener = new RecordPlayClickListener(event.getRecord());
+            	RecordPlayClickListener listener = new RecordPlayClickListener(selectedEvent.getRecord());
             	iBtnRecordPaly.setOnClickListener(listener);
             } 
-            tvEventName.setText(event.getEventName());  
-            tvEventContent.setText(event.getDescription());
-            tvTimeBegin.setText(dateFormat(event.getCalFrom().getTime()));
-            tvTimeEnd.setText(dateFormat(event.getCalTo().getTime()));
-            if(!event.getPhoto().contentEquals("null")){
+            tvEventName.setText(selectedEvent.getEventName());  
+            tvEventContent.setText(selectedEvent.getDescription());
+            tvTimeBegin.setText(dateFormat(selectedEvent.getCalFrom().getTime()));
+            tvTimeEnd.setText(dateFormat(selectedEvent.getCalTo().getTime()));
+            if(!selectedEvent.getPhoto().contentEquals("null")){
             	ivEventPhoto.setBackgroundResource(R.drawable.no_event_photo);
-            	syncImageLoader.loadImage(position, eventImageUrl + event.getPhoto(),  
-                        imageLoadListener, event.getPhoto()); 
-            }
-            
-            return convertView;  
+            	syncImageLoader.loadImage(position, eventImageUrl + selectedEvent.getPhoto(),  
+                        imageLoadListener, selectedEvent.getPhoto()); 
+            }         
+            return convertView; 
         }  
   
         SyncImageLoader.OnImageLoadListener imageLoadListener = 
@@ -572,15 +706,12 @@ public class DateActivity extends Activity {
 				StringBuffer sb = new StringBuffer();
 				String line = null;
 				BufferedReader br = null;				
-				//创建一个url对象；
 				try {
 					url = new URL(newUrl);
-					//创建一个http连接
 					HttpURLConnection urlConn  = (HttpURLConnection)url.openConnection();
 					br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
 					while((line = br.readLine())!=null){
 						sb.append(line);
-						System.out.println(sb.toString());
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -593,7 +724,7 @@ public class DateActivity extends Activity {
 				}
 				return sb.toString();
 			}			
-			//返回-1下载文件出错，返回0下载成功，返回1文件已经存在
+			//error return -1 , success return 0 , file exist return 1
 			public int downFile(String urlStr,String path,String fileName){
 				try {
 					InputStream is = null;
@@ -601,7 +732,6 @@ public class DateActivity extends Activity {
 					if(fileUtils.existSDFile(path+fileName)){
 						return 1;
 					}else{
-						//inputStream = 上个从网络上获得的输入流
 						is = getInputStreamFromUrl(urlStr);
 						File resultFile = fileUtils.write2SDCARDFromInputSteam(path, fileName, is);
 						if(resultFile==null)return -1;
@@ -634,24 +764,20 @@ public class DateActivity extends Activity {
 			public FileUtils() {
 				SDCARD = Environment.getExternalStorageDirectory() + "/";
 			}
-			// 创建一个目录
 			public File createSDDir(String dirName) {
 				File fileDir = new File(SDCARD + dirName);
 				fileDir.mkdir();
 				return fileDir;
 			}
-			// 创建一个文件；
 			public File createSDFile(String fileName) throws IOException {
-				File file = new File(SDCARD+fileName);   //注意在这里一定要加上主目录 SDCARD中，才可以，不然会找不到目录 。
+				File file = new File(SDCARD+fileName); 
 				file.createNewFile();
 				return file;
 			}
-			// 判断SD卡上的文件是不是存在；
 			public boolean existSDFile(String fileName) {
 				File file = new File(SDCARD + fileName);
 				return file.exists();
 			}
-			// 将一个流对象写入SDCARD
 			public File write2SDCARDFromInputSteam(String path, String fileName,
 					InputStream is) {
 				File file = null;
@@ -702,7 +828,6 @@ public class DateActivity extends Activity {
 			protected Integer doInBackground(String... params) {
 				// TODO Auto-generated method stub
 				DownloadHelper downloadHelper = new DownloadHelper();
-				System.out.println(Global.EVENTRECORDURL+fileName);
 				return downloadHelper.downFile(Global.EVENTRECORDURL+fileName, 
 						"Schedule/tempEventRecord/",fileName);
 			}

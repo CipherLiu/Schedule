@@ -216,6 +216,7 @@
         	        android:id="@+id/iv_photo"
         	        android:layout_width="128dp"
         	        android:layout_marginRight="5dp"
+        	        android:layout_marginLeft="5dp"
         	        android:layout_below="@+id/tv_photo"
         	        android:layout_alignParentLeft="true"
         	        android:src="@drawable/no_event_photo"

@@ -434,7 +434,8 @@ public class LoginActivity extends Activity {
 				HttpResponse httpResponse = httpClient.execute(httpget);
 				JSONObject resultJSON = new JSONObject();
 				if(httpResponse.getStatusLine().getStatusCode() == 200){
-					String retSrc = EntityUtils.toString(httpResponse.getEntity()); 
+					String retSrc = new String(EntityUtils.toByteArray(
+							httpResponse.getEntity()),"UTF-8"); 
 					resultJSON = new JSONObject(retSrc);
 				}else{
 					resultJSON.put("result", Primitive.CONNECTIONREFUSED);

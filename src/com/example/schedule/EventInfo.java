@@ -4,7 +4,7 @@ import java.util.Calendar;
 
 public class EventInfo {
 
-	private String userEmail;
+	private String userName;
 	private String userId;
 	private String updateTime;
 	private String eventId;
@@ -17,16 +17,37 @@ public class EventInfo {
 	private String photo;
 	private String description;
 	private String targetGroup;
+	private int commentCount;
+	private String commentsString;
+	private String userIamge;
 	
+	public String getCommentsString() {
+		return commentsString;
+	}
+	public void setCommentsString(String commentsString) {
+		this.commentsString = commentsString;
+	}
+	public int getCommentCount() {
+		return commentCount;
+	}
+	public void setCommentCount(int commentCount) {
+		this.commentCount = commentCount;
+	}
 	public String getTargetGroup() {
 		return targetGroup;
 	}
 	public void setTargetGroup(String targetGroup) {
 		this.targetGroup = targetGroup;
 	}
+	public String getUserIamge() {
+		return userIamge;
+	}
+	public void setUserIamge(String userIamge) {
+		this.userIamge = userIamge;
+	}
 	public EventInfo() {
 		
-		this.userEmail = "";
+		this.userName = "";
 		this.userId = "";
 		this.eventId = "";
 		this.eventName = "";
@@ -39,11 +60,12 @@ public class EventInfo {
 		this.photo = "";
 		this.description = "";
 	}
-	public String getUserEmail() {
-		return userEmail;
+
+	public String getUserName() {
+		return userName;
 	}
-	public void setUserEmail(String userEmail) {
-		this.userEmail = userEmail;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	public String getUserId() {
 		return userId;

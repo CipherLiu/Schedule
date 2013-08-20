@@ -544,13 +544,12 @@ public class ScheduleCalendarView {
 				case Primitive.ACCEPT:
 					JSONArray jArray = result.getJSONArray("eventArray");
 					Intent i = new Intent(context,DateActivity.class);
-					i.putExtra("year", calSelected.get(Calendar.YEAR));
-					i.putExtra("month", calSelected.get(Calendar.MONTH)+1);
-					i.putExtra("dayOfMonth", calSelected.get(Calendar.DAY_OF_MONTH));
 					i.putExtra("calendar", calSelected.getTimeInMillis());
 					i.putExtra("userId", userId);
+					i.putExtra("publisherId", userId);
 					i.putExtra("eventArray", jArray.toString());
 					i.putExtra("groupListString", context.getGroupListString());
+					i.putExtra("fromActivity", "MainActivity");
 					context.startActivityForResult(i,2);
 					break;
 				case Primitive.DBCONNECTIONERROR:

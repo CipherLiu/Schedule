@@ -230,8 +230,8 @@ public class RegisterActivity extends Activity {
         intent.putExtra("crop", "true");  
         intent.putExtra("aspectX", 1);  
         intent.putExtra("aspectY", 1);    
-        intent.putExtra("outputX", 128);  
-        intent.putExtra("outputY", 128);  
+        intent.putExtra("outputX", 70);  
+        intent.putExtra("outputY", 70);  
         intent.putExtra("return-data", true);  
         startActivityForResult(intent, PHOTO_REQUEST_CUT); 
     }  
