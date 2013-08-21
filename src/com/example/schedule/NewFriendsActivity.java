@@ -3,6 +3,7 @@ package com.example.schedule;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -52,6 +53,7 @@ public class NewFriendsActivity extends Activity {
     private ArrayList<String> members = new ArrayList();
     private static String url = Global.BASICURL+"GroupUpdate";
     private String userId;
+    public static Map<Integer, Boolean> isSelected;  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -81,9 +83,10 @@ public class NewFriendsActivity extends Activity {
 				e.printStackTrace();
 			}
 	        
-	        
+	        isSelected = new HashMap<Integer, Boolean>();   
 	        for(int i=0 ; i < friends.size();i++){
 	        	mAdapter.addUser(friends.get(i));
+	        	isSelected.put(i, false);  
 	        }
 	        lv_new_friends.setAdapter(mAdapter);
 	        lv_new_friends.setOnItemClickListener(new OnItemClickListener() {
@@ -92,20 +95,21 @@ public class NewFriendsActivity extends Activity {
 	            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 	                    long arg3) {
 	            	//Find touched CheckBox 
-	            	//CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_friends_is_add);
+	            	System.out.println("arg2 is:"+arg2);
 	            	CheckBox cb = (CheckBox)arg1.findViewById(R.id.cb_new_friends_is_add);
-	            	System.out.println("Get arg2:"+arg2);
 	            	cb.toggle();
+	            	isSelected.put(arg2, cb.isChecked());
 	            	if(cb.isChecked()){
 	            		members.add(friends.get(arg2).getUserId());
 	            	}else{
 	            		
 	            		for(int i = 0; i<members.size(); i++){
-	            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
+	            			if(members.get(i).contentEquals(friends.get(arg2).getUserId())){
 	            				members.remove(i);
 	            			}
 	            		}
 	            	}
+	            	System.out.println("Selected "+members.size());
 	                
 	            }
 	        });
@@ -230,7 +234,11 @@ public class NewFriendsActivity extends Activity {
         // Notify listView
         mAdapter.notifyDataSetChanged();
     }
-
+    public final class ViewHolder{
+        TextView tvUsername;
+        CheckBox cb;
+        ImageView ivUserImg;
+    }
     public class GroupItemAdapter extends BaseAdapter {  
         private LayoutInflater mInflater;  
         private Vector<UserInfo> mUsers = new Vector<UserInfo>();  
@@ -281,30 +289,32 @@ public class NewFriendsActivity extends Activity {
         }  
   
         public View getView(int position, View convertView, ViewGroup parent) {  
-            if (convertView == null) {  
-                convertView = mInflater.inflate(R.layout.new_friends_listview_item,  
-                        null);  
-            }  
-            UserInfo user = mUsers.get(position);  
-            convertView.setTag(position);  
-            ImageView ivUserProfile = (ImageView) convertView.findViewById(
-            		R.id.iv_new_friends_user_profile);
-            TextView tvUserName = (TextView)convertView.findViewById(
-            		R.id.tv_new_friends_username);
-            CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
-            		R.id.cb_new_friends_is_add);
-            
-            tvUserName.setText(user.getUsername());  
-            if(!user.getImage().contentEquals("null")){
-            	ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
-            	syncImageLoader.loadImage(position,
-            			Global.USERIMGURL+user.getImage(),  
-                        imageLoadListener, user.getImage()); 
-            	} else{
-            		ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
-            	}
+        	 if (convertView == null) {  
+                 convertView = mInflater.inflate(R.layout.new_friends_listview_item,  
+                         null);  
+             }  
+             UserInfo user = mUsers.get(position);  
+             convertView.setTag(position);  
+             ImageView ivUserProfile = (ImageView) convertView.findViewById(
+             		R.id.iv_new_friends_user_profile);
+             TextView tvUserName = (TextView)convertView.findViewById(
+             		R.id.tv_new_friends_username);
+             CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
+             		R.id.cb_new_friends_is_add);
+             cbIsChecked.setChecked(isSelected.get(position));
              
-            return convertView;  
+             tvUserName.setText(user.getUsername());  
+             if(!user.getImage().contentEquals("null")){
+             	ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
+             	syncImageLoader.loadImage(position,
+             			Global.USERIMGURL+user.getImage(),  
+                         imageLoadListener, user.getImage()); 
+             	}else
+             	{
+             		ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
+             	}
+              
+             return convertView;  
         }  
   
         SyncImageLoader.OnImageLoadListener imageLoadListener = 

@@ -1,6 +1,7 @@
 package com.example.schedule;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -53,6 +54,7 @@ public class NewFriendsToGroupActivity extends Activity {
     private String userId;
     private String groupId;
     private String httpRespond;
+    public static Map<Integer, Boolean> isSelected;  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -85,6 +87,7 @@ public class NewFriendsToGroupActivity extends Activity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+		        isSelected = new HashMap<Integer, Boolean>();  
 		        for(int i=0 ; i < friends.size();i++){
 		        	mAdapter.addUser(friends.get(i));
 		        }
@@ -97,12 +100,13 @@ public class NewFriendsToGroupActivity extends Activity {
 		            	//Find touched CheckBox 
 		            	CheckBox cb = (CheckBox)arg1.findViewById(R.id.cb_new_friends_to_group_is_add);
 		            	cb.toggle();
+		            	isSelected.put(arg2, cb.isChecked());
 		            	if(cb.isChecked()){
 		            		members.add(friends.get(arg2).getUserId());
 		            	}else{
 		            		
 		            		for(int i = 0; i<members.size(); i++){
-		            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
+		            			if(members.get(i).contentEquals(friends.get(arg2).getUserId())){
 		            				members.remove(i);
 		            			}
 		            		}
@@ -286,7 +290,7 @@ public class NewFriendsToGroupActivity extends Activity {
             		R.id.tv_new_friends_to_group_username);
             CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
             		R.id.cb_new_friends_to_group_is_add);
-            
+            cbIsChecked.setChecked(isSelected.get(position));
             tvUserName.setText(user.getUsername());  
             if(!user.getImage().contentEquals("null")){
             	ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);

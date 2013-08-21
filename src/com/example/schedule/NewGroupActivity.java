@@ -75,6 +75,7 @@ public class NewGroupActivity extends Activity {
     private String httpRespond;
     private String newGroupName;
     private String existGroupList;
+    public static Map<Integer, Boolean> isSelected;  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -115,9 +116,11 @@ public class NewGroupActivity extends Activity {
 				} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				}
+			}
+	        isSelected = new HashMap<Integer, Boolean>();  
 	        for(int i=0 ; i < friends.size();i++){
 	        	mAdapter.addUser(friends.get(i));
+	        	isSelected.put(i, false); 
 	        }
 	        lv_new_gp.setAdapter(mAdapter);
 	        lv_new_gp.setOnItemClickListener(new OnItemClickListener() {
@@ -128,12 +131,13 @@ public class NewGroupActivity extends Activity {
 	            	CheckBox cb = (CheckBox)arg1.findViewById(R.id.cb_new_gp_is_add);
 	            	//CheckBox toggle
 	            	cb.toggle();
+	            	isSelected.put(arg2, cb.isChecked());
 	            	if(cb.isChecked()){
 	            		members.add(friends.get(arg2).getUserId());
 	            	}else{
 	            		
 	            		for(int i = 0; i<members.size(); i++){
-	            			if(members.get(i).contentEquals(friends.get(i).getUserId())){
+	            			if(members.get(i).contentEquals(friends.get(arg2).getUserId())){
 	            				members.remove(i);
 	            			}
 	            		}
@@ -378,6 +382,7 @@ public class NewGroupActivity extends Activity {
             		R.id.tv_new_gp_username);
             CheckBox cbIsChecked = (CheckBox)convertView.findViewById(
             		R.id.cb_new_gp_is_add);
+            cbIsChecked.setChecked(isSelected.get(position));
             tvUserName.setText(user.getUsername());  
             if(!user.getImage().contentEquals("null")){
             	ivUserProfile.setBackgroundResource(R.drawable.no_photo_small);
