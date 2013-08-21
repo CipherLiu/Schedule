@@ -54,7 +54,6 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 	private static String url = Global.BASICURL+"MemberAddCheck";
 	private String paraToNewFriendsToGroupActivity;
 	private String anotherDayJsonString;
-	private ArrayList<String> paraListToDrawView = new ArrayList();
 	private DrawView dr;
 	private static int dayOffset = 0;
 	private static String group_social_url = Global.BASICURL+"GroupSocial";
@@ -86,7 +85,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		groupId = getIntent().getStringExtra("groupIdToEventDetailActivity");
 		//Get JSON data
 		jsonStringFromFragment = getIntent().getStringExtra("paraToEventDetailActivity");
-		paraListToDrawView.add(jsonStringFromFragment);
+		anotherDayJsonString = jsonStringFromFragment;
 		//Find ImageView
 		profile[1]=(ImageView) findViewById(R.id.profile1_event_detail);
 		profile[2]=(ImageView) findViewById(R.id.profile2_event_detail);
@@ -204,7 +203,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 					//String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":
 					//\"UserImage201308200937545212c8a844b4ad93159d8223.jpg\",\"eventArray\":[]}]}";
 					dr.setSixTupleIndex(sixTupleIndex);
-					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setJSONData(anotherDayJsonString);
 					dr.setBaseDay(currentDayOfYear+dayOffset);
 					dr.postInvalidate();
 				}
@@ -242,7 +241,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 						}
 					}
 					dr.setSixTupleIndex(sixTupleIndex);
-					dr.setJSONData(paraListToDrawView.get(dayOffset));
+					dr.setJSONData(anotherDayJsonString);
 					dr.setBaseDay(currentDayOfYear+dayOffset);
 					dr.postInvalidate();
 				}
@@ -258,23 +257,14 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
                 /*&& Math.abs(velocityY) > FLING_MIN_VELOCITY*/)  {   
 			dayOffset++;
 			//Request new data
-			if(dayOffset == paraListToDrawView.size()){
-				Calendar requestCal = Calendar.getInstance();
-				requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
+			Calendar requestCal = Calendar.getInstance();
+			requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
 				
-				requestCal.set(Calendar.HOUR_OF_DAY, 0);
-				requestCal.set(Calendar.MINUTE, 0);
-				requestCal.set(Calendar.SECOND, 0);
-				requestCal.set(Calendar.MILLISECOND,0);
-				new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
-			}
-			//Read from cached data
-			else{
-				dr.setSixTupleIndex(sixTupleIndex);
-				dr.setJSONData(paraListToDrawView.get(dayOffset));
-				dr.setBaseDay(currentDayOfYear+dayOffset);
-				dr.postInvalidate();
-			}
+			requestCal.set(Calendar.HOUR_OF_DAY, 0);
+			requestCal.set(Calendar.MINUTE, 0);
+			requestCal.set(Calendar.SECOND, 0);
+			requestCal.set(Calendar.MILLISECOND,0);
+			new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 		} 
 		if (e2.getY()-e1.getY() > FLING_MIN_DISTANCE 
                 /*&& Math.abs(velocityY) > FLING_MIN_VELOCITY*/) {  
@@ -287,10 +277,15 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				alreadyToday.show();
 				dayOffset=0;
 			}else{
-				dr.setSixTupleIndex(sixTupleIndex);
-				dr.setJSONData(paraListToDrawView.get(dayOffset));
-				dr.setBaseDay(currentDayOfYear+dayOffset);
-				dr.postInvalidate();
+				//Request new data
+				Calendar requestCal = Calendar.getInstance();
+				requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
+					
+				requestCal.set(Calendar.HOUR_OF_DAY, 0);
+				requestCal.set(Calendar.MINUTE, 0);
+				requestCal.set(Calendar.SECOND, 0);
+				requestCal.set(Calendar.MILLISECOND,0);
+				new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 			}
 		}  
 		return false;    
@@ -370,11 +365,9 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				connectError.show();
 				break;
 			case Primitive.ACCEPT:
-				//New add to paraListToDrawView
-				paraListToDrawView.add(anotherDayJsonString);
-				System.out.println("paraListToDrawView's size is:"+paraListToDrawView.size());
 				//Re-draw
 				System.out.println("Gotted new data is:"+anotherDayJsonString);
+				dr.setSixTupleIndex(sixTupleIndex);
 				dr.setJSONData(anotherDayJsonString);
 				dr.setBaseDay(currentDayOfYear+dayOffset);
 				dr.postInvalidate();
