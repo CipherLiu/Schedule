@@ -62,7 +62,12 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 	private int sixTupleIndex = 0;
 	private int sixTupleNumber;
 	private int memberNumber;
-	
+	//Show time stamp
+	TextView showTimeStamp;
+	private int showYear;
+	private int showMonth;
+	private int showDay;
+
 	//Gestures
 	private static final int FLING_MIN_DISTANCE = 100;
 	//private static final int FLING_MIN_VELOCITY = 150;
@@ -85,6 +90,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		groupId = getIntent().getStringExtra("groupIdToEventDetailActivity");
 		//Get JSON data
 		jsonStringFromFragment = getIntent().getStringExtra("paraToEventDetailActivity");
+		//Just hold original and a new one
 		anotherDayJsonString = jsonStringFromFragment;
 		//Find ImageView
 		profile[1]=(ImageView) findViewById(R.id.profile1_event_detail);
@@ -120,10 +126,6 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		} 
 		memberNumber = profileUrl.size();
 		sixTupleNumber = memberNumber/6;
-		
-		System.out.println("Member num is:"+memberNumber);
-		System.out.println("sixTupleNumber num is:"+sixTupleNumber);
-		System.out.println("JSON data is:"+jsonStringFromFragment);
 		/*
 		 * Async task to load profile
 		 */
@@ -146,13 +148,21 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		}
 		//Current day of year
 		currentCal = Calendar.getInstance();
-		currentDayOfYear = currentCal.get(Calendar.DAY_OF_YEAR);;
+		currentDayOfYear = currentCal.get(Calendar.DAY_OF_YEAR);
+		showTimeStamp = (TextView) this.findViewById(R.id.tv_show_time_stamp);
+		showYear = currentCal.get(Calendar.YEAR);
+		showMonth = currentCal.get(Calendar.MONTH);
+		showDay = currentCal.get(Calendar.DAY_OF_MONTH);
+		showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
 		//View
 		dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
-		//Send JSON data to DrawView
+		//Send data to DrawView
 		dr.setJSONData(jsonStringFromFragment);
 		dr.setBaseDay(currentDayOfYear);
+		dr.setSixTupleIndex(sixTupleIndex);
 	}
+	//Override onTouch
+	//Monitoring up,down,left and right gestures
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		return mGestureDetector.onTouchEvent(event);
@@ -161,9 +171,9 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
 		/*
-		 * Gestures for movements
-		 * as follows
-		 * To left,to right,to up and to down gestures
+		 * Gestures for movements,
+		 * as follows,
+		 * To left,to right,to up and to down gestures,
 		 * respectively
 		 */
 		if  (e1.getX()-e2.getX() > FLING_MIN_DISTANCE 
@@ -183,13 +193,17 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 						}
 					}
+					//Re-draw
 					dr.setSixTupleIndex(sixTupleIndex);
-					dr.setJSONData(jsonStringFromFragment);
-					dr.setBaseDay(currentDayOfYear);
+					dr.setJSONData(anotherDayJsonString);
+					dr.setBaseDay(currentDayOfYear+dayOffset);
+					//invalidate
 					dr.postInvalidate();
 				}else{
 					for(int i=1;i<=6;i++){
+						//Restore to default
 						profile[i].setBackgroundResource(R.drawable.no_photo_small);
+						//Clean up
 						profile[i].setImageBitmap(null);
 					}
 					for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+memberNumber%6);i++){
@@ -264,6 +278,13 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 			requestCal.set(Calendar.MINUTE, 0);
 			requestCal.set(Calendar.SECOND, 0);
 			requestCal.set(Calendar.MILLISECOND,0);
+			
+			showYear = requestCal.get(Calendar.YEAR);
+			showMonth = requestCal.get(Calendar.MONTH);
+			showDay = requestCal.get(Calendar.DAY_OF_MONTH);
+			
+			showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
+			
 			new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 		} 
 		if (e2.getY()-e1.getY() > FLING_MIN_DISTANCE 
@@ -285,6 +306,13 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				requestCal.set(Calendar.MINUTE, 0);
 				requestCal.set(Calendar.SECOND, 0);
 				requestCal.set(Calendar.MILLISECOND,0);
+				
+				showYear = requestCal.get(Calendar.YEAR);
+				showMonth = requestCal.get(Calendar.MONTH);
+				showDay = requestCal.get(Calendar.DAY_OF_MONTH);
+				
+				showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
+				
 				new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 			}
 		}  
