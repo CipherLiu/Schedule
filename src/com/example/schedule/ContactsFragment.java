@@ -20,7 +20,6 @@ public class ContactsFragment extends Fragment{
 		super.onCreate(savedInstanceState);
 		userId = this.getArguments().getString("userId");
 		groupListString = this.getArguments().getString("groupListString");
-		System.out.println(groupListString);
 	}
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

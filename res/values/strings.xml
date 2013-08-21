@@ -38,8 +38,8 @@
 	<string name="recording">Keep pressing to record</string>
 	<string name="long_time">Recoring is too long</string>
 	<string name="cancal_record">Recording cancel </string>
-	<string name="reg_ok">RegOk</string>
-	<string name="reg_cancel">RegCancel</string>
+	<string name="reg_ok">OK</string>
+	<string name="reg_cancel">Cancel</string>
 	<string name="guide_go">Welcome</string>
 	<string name="title_activity_welcome">WelcomeActivity</string>
 	<string name="title_activity_guide">GuideActivity</string>

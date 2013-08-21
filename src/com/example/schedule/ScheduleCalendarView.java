@@ -544,6 +544,10 @@ public class ScheduleCalendarView {
 				case Primitive.ACCEPT:
 					JSONArray jArray = result.getJSONArray("eventArray");
 					Intent i = new Intent(context,DateActivity.class);
+					calSelected.set(Calendar.HOUR_OF_DAY, 
+							Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+					calSelected.set(Calendar.MINUTE, 
+							Calendar.getInstance().get(Calendar.MINUTE));
 					i.putExtra("calendar", calSelected.getTimeInMillis());
 					i.putExtra("userId", userId);
 					i.putExtra("publisherId", userId);

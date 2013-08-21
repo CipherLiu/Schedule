@@ -46,7 +46,6 @@
                android:layout_below="@+id/et_register_username"
                android:layout_marginTop="20dp"
                android:layout_toRightOf="@+id/iv_register_user_image"
-               android:background="#00000000"
                android:src="@+drawable/camera" />
 
             <ImageButton
@@ -56,7 +55,6 @@
                 android:layout_below="@+id/et_register_username"
                 android:layout_marginTop="20dp"
                 android:layout_toRightOf="@+id/btn_register_camera"
-                android:background="#00000000"
                 android:src="@+drawable/gallery" />
 
     </RelativeLayout>

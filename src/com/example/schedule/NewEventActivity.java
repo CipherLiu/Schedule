@@ -100,6 +100,7 @@ public class NewEventActivity extends Activity{
 	private int pausePosition = 0;
 	private ProgressDialog progressDialog;
 	private String userId;
+	private Calendar calendar = Calendar.getInstance();
 
 	private Spinner groupSpinner;     
     private ArrayAdapter<String> spinnerAdapter;
@@ -123,6 +124,7 @@ public class NewEventActivity extends Activity{
 		int gainHourOfDay = gainIntent.getIntExtra("hourOfDay",0);
 		int gainMinute = gainIntent.getIntExtra("minute", 0);
 		fromAvtivityName = gainIntent.getStringExtra("from");
+		calendar.setTimeInMillis(gainIntent.getLongExtra("calendar", 0));
 //		userEmail = gainIntent.getStringExtra("userEmail");
 		userId = gainIntent.getStringExtra("userId");
 		String groupListString = gainIntent.getStringExtra("groupListString");
@@ -148,17 +150,25 @@ public class NewEventActivity extends Activity{
 		if(!eventInfo.CalIsSet()){
 			if(gainMinute > 29)
 			{
-				calFrom.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 0);
-				calFrom.roll(Calendar.HOUR_OF_DAY, true);
-				calTo.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 0);
-				calTo.roll(Calendar.HOUR_OF_DAY, true);
-				calTo.roll(Calendar.HOUR_OF_DAY, true);
+//				calFrom.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 0);
+				calFrom.setTimeInMillis(calendar.getTimeInMillis());
+				calFrom.set(Calendar.MINUTE, 0);
+				calFrom.add(Calendar.HOUR_OF_DAY, 1);
+//				calTo.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 0);
+				calTo.setTimeInMillis(calendar.getTimeInMillis());
+				calTo.set(Calendar.MINUTE, 0);
+				calTo.add(Calendar.HOUR_OF_DAY, 1);
+				calTo.add(Calendar.HOUR_OF_DAY, 1);
 			}
 			else
 			{
-				calFrom.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 30);
-				calTo.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 30);
-				calTo.roll(Calendar.HOUR_OF_DAY, true);
+//				calFrom.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 30);
+//				calTo.set(gainYear, gainMonth, gainDayOfMonth, gainHourOfDay, 30);
+				calFrom.setTimeInMillis(calendar.getTimeInMillis());
+				calFrom.set(Calendar.MINUTE, 30);
+				calTo.setTimeInMillis(calendar.getTimeInMillis());
+				calTo.set(Calendar.MINUTE, 30);
+				calTo.add(Calendar.HOUR_OF_DAY, 1);
 			}
 			calFrom.set(Calendar.SECOND, 0);
 			calFrom.set(Calendar.MILLISECOND, 0);
@@ -231,6 +241,7 @@ public class NewEventActivity extends Activity{
 		           calTo.setTimeInMillis(calFrom.getTimeInMillis() + delta);
 		           btnFromDate.setText(dfDate.format(calFrom.getTime()));
 		           btnToDate.setText(dfDate.format(calTo.getTime()));
+		           dateTextView.setText(dfDate.format(calFrom.getTime()));
 		           //btnToTime.setText(dfTime.format(calTo.getTime())); 
 		           calFrom.set(Calendar.SECOND, 0);
 		           calFrom.set(Calendar.MILLISECOND, 0);
@@ -248,12 +259,16 @@ public class NewEventActivity extends Activity{
 		           calTo.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 		           if(calTo.before(calFrom))
 		           {
-		        	   calTo.setTimeInMillis(calFrom.getTimeInMillis());
+		        	   Calendar calTemp = Calendar.getInstance();
+		        	   calTemp.setTimeInMillis(calFrom.getTimeInMillis());
+		        	   calTemp.add(Calendar.MINUTE, 1);
+		        	   calTo.setTimeInMillis(calTemp.getTimeInMillis());
 		           }
 		           //btnFromDate.setText(dfDate.format(calFrom.getTime()));
 		           btnToDate.setText(dfDate.format(calTo.getTime()));
 		           //btnFromTime.setText(dfTime.format(calFrom.getTime()));
 		           btnToTime.setText(dfTime.format(calTo.getTime()));
+		           dateTextView.setText(dfDate.format(calFrom.getTime()));
 		           calFrom.set(Calendar.SECOND, 0);
 		           calFrom.set(Calendar.MILLISECOND, 0);
 		           calTo.set(Calendar.SECOND, 0);
@@ -273,6 +288,7 @@ public class NewEventActivity extends Activity{
 		        btnFromTime.setText(dfTime.format(calFrom.getTime()));
 		        btnToDate.setText(dfDate.format(calTo.getTime()));
 		        btnToTime.setText(dfTime.format(calTo.getTime()));
+		        dateTextView.setText(dfDate.format(calFrom.getTime()));
 		        calFrom.set(Calendar.SECOND, 0);
 				calFrom.set(Calendar.MILLISECOND, 0);
 				calTo.set(Calendar.SECOND, 0);
@@ -289,10 +305,14 @@ public class NewEventActivity extends Activity{
 			        calTo.set(Calendar.MINUTE, minute);
 			        if(calTo.before(calFrom))
 			        {
-			        	calTo.setTimeInMillis(calFrom.getTimeInMillis());
+		        	   Calendar calTemp = Calendar.getInstance();
+		        	   calTemp.setTimeInMillis(calFrom.getTimeInMillis());
+		        	   calTemp.add(Calendar.MINUTE, 1);
+		        	   calTo.setTimeInMillis(calTemp.getTimeInMillis());
 			        }
 			        btnToDate.setText(dfDate.format(calTo.getTime()));
 			        btnToTime.setText(dfTime.format(calTo.getTime()));
+			        dateTextView.setText(dfDate.format(calFrom.getTime()));
 			        calFrom.set(Calendar.SECOND, 0);
 					calFrom.set(Calendar.MILLISECOND, 0);
 					calTo.set(Calendar.SECOND, 0);
@@ -668,7 +688,8 @@ public class NewEventActivity extends Activity{
 					new eventCheckAT().execute(calString,userId);
 				}else if(fromAvtivityName.contentEquals("DateActivity")){
 					Calendar calToQuery = Calendar.getInstance();
-					calToQuery.setTimeInMillis(getIntent().getLongExtra("calendar", 0));
+//					calToQuery.setTimeInMillis(getIntent().getLongExtra("calendar", 0));
+					calToQuery.setTimeInMillis(calFrom.getTimeInMillis());
 					calToQuery.set(Calendar.HOUR_OF_DAY, 0);
 					calToQuery.set(Calendar.MINUTE, 0);
 					calToQuery.set(Calendar.SECOND, 0);
@@ -760,6 +781,10 @@ public class NewEventActivity extends Activity{
 					}
 					Intent data=new Intent();  
 		            data.putExtra("hasEventArray",hasEventArray);
+		            calFrom.set(Calendar.HOUR_OF_DAY, 
+		            		Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+		            calFrom.set(Calendar.MINUTE, 
+		            		Calendar.getInstance().get(Calendar.MINUTE));
 		            data.putExtra("calSelected", calFrom);
 		            setResult(1, data);   
 		            finish(); 
@@ -844,6 +869,11 @@ public class NewEventActivity extends Activity{
 					JSONArray jArray = result.getJSONArray("eventArray");
 					Intent data=new Intent();  
 		            data.putExtra("eventArray",jArray.toString());
+		            calFrom.set(Calendar.HOUR_OF_DAY, 
+		            		Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+		            calFrom.set(Calendar.MINUTE, 
+		            		Calendar.getInstance().get(Calendar.MINUTE));
+		            data.putExtra("calSelected", calFrom);
 		            setResult(1, data);   
 		            finish(); 
 					break;

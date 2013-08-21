@@ -203,6 +203,8 @@ public class DateActivity extends Activity {
 		// TODO Auto-generated method stub
 		if(requestCode == 1 && resultCode == 1){
 			Bundle extras = data.getExtras();
+			calendar = (Calendar)extras.get("calSelected");
+			dateTextView.setText(titleDateFormat(calendar.getTime()));
 			try {
 				eventArray = new JSONArray(extras.getString("eventArray"));
 				EventItemAdapter eventAdapter = new EventItemAdapter(this,dateListView);
@@ -216,7 +218,8 @@ public class DateActivity extends Activity {
 					}
 		    	}
 				dateListView.setAdapter(eventAdapter);
-				eventAdapter.notifyDataSetChanged();				
+				eventAdapter.notifyDataSetChanged();
+				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -552,7 +555,6 @@ public class DateActivity extends Activity {
         }  
   
         public View getView(int position, View convertView, ViewGroup parent) {  
-            System.out.println("getView");
         	if (convertView == null) {  
                 convertView = mInflater.inflate(R.layout.list_item_date,  
                         null);  

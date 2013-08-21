@@ -71,7 +71,6 @@ public class SocialFragment extends Fragment {
 		String socialEventArrayString = getArguments().getString("socialEventArrayString");
 		try {
 			socialEventArray = new JSONArray(socialEventArrayString);
-			System.out.println("socialEventArrayString:"+socialEventArrayString);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
