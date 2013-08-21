@@ -49,6 +49,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 	SyncImageLoader syncImageLoader; 
 	private String jsonStringFromFragment;
 	private ArrayList<String> profileUrl = new ArrayList();
+	private ArrayList<String> memberId = new ArrayList();
 	private String userId;
 	private String groupId;
 	private static String url = Global.BASICURL+"MemberAddCheck";
@@ -93,24 +94,73 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		//Just hold original and a new one
 		anotherDayJsonString = jsonStringFromFragment;
 		//Find ImageView
-		profile[1]=(ImageView) findViewById(R.id.profile1_event_detail);
-		profile[2]=(ImageView) findViewById(R.id.profile2_event_detail);
-		profile[3]=(ImageView) findViewById(R.id.profile3_event_detail);
-		profile[4]=(ImageView) findViewById(R.id.profile4_event_detail);
-		profile[5]=(ImageView) findViewById(R.id.profile5_event_detail);
-		profile[6]=(ImageView) findViewById(R.id.profile6_event_detail);
+		profile[0]=(ImageView) findViewById(R.id.profile1_event_detail);
+		profile[1]=(ImageView) findViewById(R.id.profile2_event_detail);
+		profile[2]=(ImageView) findViewById(R.id.profile3_event_detail);
+		profile[3]=(ImageView) findViewById(R.id.profile4_event_detail);
+		profile[4]=(ImageView) findViewById(R.id.profile5_event_detail);
+		profile[5]=(ImageView) findViewById(R.id.profile6_event_detail);
+		profile[0].setOnClickListener(new View.OnClickListener() {
+
+             @Override
+             public void onClick(View v) {
+            	 System.out.println("P"+(sixTupleIndex*6)+" touched");
+            	 System.out.println("memberId is:"+memberId.get(sixTupleIndex*6));
+             }
+		});
+		profile[1].setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+           	 System.out.println("P"+(sixTupleIndex*6+1)+" touched");
+           	System.out.println("memberId is:"+memberId.get(sixTupleIndex*6+1));
+            }
+		});
+		profile[2].setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+           	 System.out.println("P"+(sixTupleIndex*6+2)+" touched");
+           	System.out.println("memberId is:"+memberId.get(sixTupleIndex*6+2));
+            }
+		});
+		profile[3].setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+           	 System.out.println("P"+(sixTupleIndex*6+3)+" touched");
+           	System.out.println("memberId is:"+memberId.get(sixTupleIndex*6+3));
+            }
+		});
+		profile[4].setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+           	 System.out.println("P"+(sixTupleIndex*6+4)+" touched");
+           	System.out.println("memberId is:"+memberId.get(sixTupleIndex*6+4));
+            }
+		});
+		profile[5].setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+           	 System.out.println("P"+(sixTupleIndex*6+5)+" touched");
+           	System.out.println("memberId is:"+memberId.get(sixTupleIndex*6+5));
+            }
+		});
 		/*
 		 * Set default profile
 		 */
+		profile[0].setBackgroundResource(R.drawable.no_photo_small);
 		profile[1].setBackgroundResource(R.drawable.no_photo_small);
 		profile[2].setBackgroundResource(R.drawable.no_photo_small);
 		profile[3].setBackgroundResource(R.drawable.no_photo_small);
 		profile[4].setBackgroundResource(R.drawable.no_photo_small);
 		profile[5].setBackgroundResource(R.drawable.no_photo_small);
-		profile[6].setBackgroundResource(R.drawable.no_photo_small);
 		/*
 		 * Parse member image url
 		 */
+		System.out.println("JSON data:"+jsonStringFromFragment);
 		try {
 			JSONObject joOrigionString = new JSONObject(jsonStringFromFragment);
 			JSONObject joMember = new JSONObject();
@@ -119,6 +169,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 			for(int i=0 ; i < jaSocialArray.length() ; i++){
 				joMember = (JSONObject) jaSocialArray.get(i);
 				profileUrl.add(joMember.getString("memberImage"));
+				memberId.add(joMember.getString("memberId"));
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -131,18 +182,13 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		 */
 		if(profileUrl.size() >= 6){
 			for(int i=0 ; i < 6 ; i++){
-				/*
-				 * Attention please
-				 * At here,activity's ImageView index starts with 1,manually
-				 * so,profile[i+1]
-				 */
-				new FillUserProfileAT(profile[i+1]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+				new FillUserProfileAT(profile[i]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 			}
 		}else{
 			for(int i=0 ; i < profileUrl.size() ; i++){
-				new FillUserProfileAT(profile[i+1]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+				new FillUserProfileAT(profile[i]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 			}
-			for(int i=profileUrl.size()+1 ; i <= 6 ; i++){
+			for(int i=profileUrl.size()%6 ; i < 6 ; i++){
 				profile[i].setBackgroundResource(0);
 			}
 		}
@@ -183,14 +229,14 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 			if(memberNumber > 6 && sixTupleIndex<=sixTupleNumber){
 				if(sixTupleIndex < sixTupleNumber){
 					//Clean up
-					for(int i=1;i<=6;i++){
+					for(int i=0;i<6;i++){
 						profile[i].setBackgroundResource(R.drawable.no_photo_small);
 						profile[i].setImageBitmap(null);
 					}
 					//New profile
 					for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+6);i++){
 						if(!profileUrl.get(i).toString().equals("null")){
-							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							new FillUserProfileAT(profile[i%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 						}
 					}
 					//Re-draw
@@ -200,7 +246,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 					//invalidate
 					dr.postInvalidate();
 				}else{
-					for(int i=1;i<=6;i++){
+					for(int i=0;i<6;i++){
 						//Restore to default
 						profile[i].setBackgroundResource(R.drawable.no_photo_small);
 						//Clean up
@@ -208,10 +254,10 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 					}
 					for(int i = sixTupleIndex*6 ; i< (sixTupleIndex*6+memberNumber%6);i++){
 						if(!profileUrl.get(i).toString().equals("null")){
-							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							new FillUserProfileAT(profile[i%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 						}
 					}
-					for(int i = memberNumber%6+1 ; i<=6;i++){
+					for(int i = memberNumber%6 ; i<6;i++){
 						profile[i].setBackgroundResource(0);
 					}
 					//String str="{\"result\":1,\"socialArray\":[{\"memberId\":\"5212c8a844b4ad93159d8223\",\"memberImage\":
@@ -234,6 +280,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
                 /*&& Math.abs(velocityX) > FLING_MIN_VELOCITY*/) {   
 			if(memberNumber > 6){
 				sixTupleIndex--;
+				System.out.println("sixTupleIndex in to right gesture:"+sixTupleIndex);
 				if(sixTupleIndex < 0){
 					Toast tip = Toast.makeText(EventDetailActivity.this,
 						     "咩，已经是前六个了啊！", Toast.LENGTH_LONG);
@@ -244,14 +291,14 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				}
 				else{
 					//Clean up
-					for(int i=1;i<=6;i++){
+					for(int i=0;i<6;i++){
 						profile[i].setBackgroundResource(R.drawable.no_photo_small);
 						profile[i].setImageBitmap(null);
 					}
 					//New
 					for(int i = sixTupleIndex*6 ; i<(sixTupleIndex*6+6) ; i++){
 						if(!profileUrl.get(i).toString().equals("null")){
-							new FillUserProfileAT(profile[(i+1)%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
+							new FillUserProfileAT(profile[i%6]).execute(Global.USERIMGURL+profileUrl.get(i).toString());
 						}
 					}
 					dr.setSixTupleIndex(sixTupleIndex);

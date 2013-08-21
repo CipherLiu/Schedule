@@ -95,7 +95,7 @@ public class NewFriendsToGroupActivity extends Activity {
 		            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 		                    long arg3) {
 		            	//Find touched CheckBox 
-		            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_friends_to_group_is_add);
+		            	CheckBox cb = (CheckBox)arg1.findViewById(R.id.cb_new_friends_to_group_is_add);
 		            	cb.toggle();
 		            	if(cb.isChecked()){
 		            		members.add(friends.get(arg2).getUserId());

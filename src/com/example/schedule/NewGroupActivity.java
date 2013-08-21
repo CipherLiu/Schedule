@@ -125,7 +125,7 @@ public class NewGroupActivity extends Activity {
 	            @Override
 	            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 	                    long arg3) {
-	            	CheckBox cb = (CheckBox)arg0.getChildAt(arg2).findViewById(R.id.cb_new_gp_is_add);
+	            	CheckBox cb = (CheckBox)arg1.findViewById(R.id.cb_new_gp_is_add);
 	            	//CheckBox toggle
 	            	cb.toggle();
 	            	if(cb.isChecked()){
