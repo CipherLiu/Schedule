@@ -56,7 +56,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 	private String paraToNewFriendsToGroupActivity;
 	private String anotherDayJsonString;
 	private DrawView dr;
-	private static int dayOffset = 0;
+	private int dayOffset = 0;
 	private static String group_social_url = Global.BASICURL+"GroupSocial";
 	private int currentDayOfYear;
 	private Calendar currentCal;
@@ -199,7 +199,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 		showYear = currentCal.get(Calendar.YEAR);
 		showMonth = currentCal.get(Calendar.MONTH);
 		showDay = currentCal.get(Calendar.DAY_OF_MONTH);
-		showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
+		showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth+1)+"-"+String.valueOf(showDay));
 		//View
 		dr = (DrawView)this.findViewById(R.id.drawView_event_detail);
 		//Send data to DrawView
@@ -320,7 +320,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 			//Request new data
 			Calendar requestCal = Calendar.getInstance();
 			requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
-				
+			System.out.println("current day is "+currentDayOfYear+" ,dayOffset is "+dayOffset);
 			requestCal.set(Calendar.HOUR_OF_DAY, 0);
 			requestCal.set(Calendar.MINUTE, 0);
 			requestCal.set(Calendar.SECOND, 0);
@@ -330,7 +330,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 			showMonth = requestCal.get(Calendar.MONTH);
 			showDay = requestCal.get(Calendar.DAY_OF_MONTH);
 			
-			showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
+			showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth+1)+"-"+String.valueOf(showDay));
 			
 			new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 		} 
@@ -348,7 +348,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				//Request new data
 				Calendar requestCal = Calendar.getInstance();
 				requestCal.set(Calendar.DAY_OF_YEAR, currentDayOfYear+dayOffset);
-					
+				System.out.println("current day is "+currentDayOfYear+" ,dayOffset is "+dayOffset);	
 				requestCal.set(Calendar.HOUR_OF_DAY, 0);
 				requestCal.set(Calendar.MINUTE, 0);
 				requestCal.set(Calendar.SECOND, 0);
@@ -358,7 +358,7 @@ public class EventDetailActivity extends Activity implements  OnTouchListener, O
 				showMonth = requestCal.get(Calendar.MONTH);
 				showDay = requestCal.get(Calendar.DAY_OF_MONTH);
 				
-				showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth)+"-"+String.valueOf(showDay));
+				showTimeStamp.setText(String.valueOf(showYear)+"-"+String.valueOf(showMonth+1)+"-"+String.valueOf(showDay));
 				
 				new GetDrawDataAT().execute(userId,groupId,String.valueOf(requestCal.getTimeInMillis()));
 			}
