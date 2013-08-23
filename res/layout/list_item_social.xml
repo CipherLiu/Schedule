@@ -118,7 +118,8 @@
             	android:focusableInTouchMode="false"
             	android:focusable="false"
             	android:layout_marginLeft="5dp"
-            	android:layout_marginRight="5dp"/>
+            	android:layout_marginRight="5dp"
+            	android:maxHeight="80dp"/>
         </LinearLayout>
         
         <RelativeLayout

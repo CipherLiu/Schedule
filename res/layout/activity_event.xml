@@ -96,7 +96,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:text="@string/comments"/>
-        <com.example.schedule.CommentListView 
+        <com.example.ui.CommentListView 
 			android:id="@+id/lv_event_event_comment"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"

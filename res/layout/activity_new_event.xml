@@ -180,7 +180,7 @@
         	        android:textStyle="bold"
         	        android:text="@+string/record"
         	        android:layout_alignParentLeft="true"/>
-        	    <com.example.schedule.RecordButton
+        	    <com.example.ui.RecordButton
         	        android:id="@+id/btn_record"
         	        android:src="@drawable/record"
         	        android:layout_width="match_parent"

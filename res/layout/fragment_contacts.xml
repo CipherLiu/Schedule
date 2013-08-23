@@ -3,8 +3,9 @@
     android:orientation="vertical" 
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" 
-    xmlns:android="http://schemas.android.com/apk/res/android">
-	<RelativeLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/page_bg">
+    <RelativeLayout 
 	    android:id="@+id/fc_rl_root"
 	    android:layout_width="fill_parent"
 	    android:layout_height="50dp" >

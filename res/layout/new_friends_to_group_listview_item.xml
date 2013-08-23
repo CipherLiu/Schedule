@@ -8,8 +8,8 @@
 	android:paddingLeft="12dip"
 	android:paddingRight="12dip">
 	<ImageView 
-		android:layout_width="40dp" 
-		android:layout_height="40dp" 
+		android:layout_width="50dp" 
+		android:layout_height="50dp" 
 		android:id="@+id/iv_new_friends_to_group_user_profile"
 		/> 
 

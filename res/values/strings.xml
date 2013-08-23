@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">Schedule</string>
+    <string name="app_name">SocialCal</string>
     <string name="email">Email</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
@@ -48,4 +48,19 @@
 	<string name="comments">Comments</string>
 	<string name="title_activity_event">Event</string>
 	<string name="delete_comment">Delete comment</string>
+	<string name="title_activity_event_detail">EventDetailActivity</string>
+	<string name="new_group">New group</string>
+	<string name="title_activity_new_group">NewGroup</string>
+	<string name="new_group_name">Input group name</string>
+	<string name="new_group_ok">OK</string>
+	<string name="new_group_cancel">Cancel</string>
+	<string name="new_friends">New friends</string>
+	<string name="title_activity_new_friends">NewFriends</string>
+	<string name="new_group_name_title">New name</string>
+	<string name="new_friends_cancel">Cancel</string>
+	<string name="new_friends_ok">OK</string>
+	<string name="title_activity_new_friends_to_group">Add friends</string>
+	<string name="new_friends_to_group_ok">OK</string>
+	<string name="new_friends_to_group_cancel">Cancel</string>
+	<string name="new_friends_to_group">Add</string>
 </resources>
