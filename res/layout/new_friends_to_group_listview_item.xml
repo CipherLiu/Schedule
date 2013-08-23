@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout 
+	android:id="@+id/rl_new_friends_to_group_root" 
+	android:layout_width="fill_parent" 
+	xmlns:android="http://schemas.android.com/apk/res/android" 
+	android:layout_height="wrap_content" 
+	android:paddingBottom="4dip" 
+	android:paddingLeft="12dip"
+	android:paddingRight="12dip">
+	<ImageView 
+		android:layout_width="40dp" 
+		android:layout_height="40dp" 
+		android:id="@+id/iv_new_friends_to_group_user_profile"
+		/> 
+
+	<TextView
+	    android:id="@+id/tv_new_friends_to_group_username"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_toRightOf="@id/iv_new_friends_to_group_user_profile"
+	    android:textSize="20dip" />
+
+	<CheckBox
+	    android:id="@+id/cb_new_friends_to_group_is_add"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:clickable="false"
+        android:focusable="false"
+	    android:layout_alignParentRight="true"
+	    android:layout_alignRight="@id/rl_new_friends_to_group_root" />
+
+</RelativeLayout>
